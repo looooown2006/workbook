@@ -9,11 +9,13 @@ import {
   BulbOutlined,
   BookOutlined
 } from '@ant-design/icons';
+import { useAppStore } from '../stores/useAppStore';
 
 const { Title, Paragraph } = Typography;
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
+  const { setStudyMode } = useAppStore();
 
   return (
     <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
@@ -146,7 +148,12 @@ const HomePage: React.FC = () => {
           <Button type="primary" onClick={() => navigate('/desktop-settings')}>
             探索桌面功能
           </Button>
-          <Button onClick={() => navigate('/question-banks')}>
+          <Button
+            onClick={() => {
+              setStudyMode('practice'); // 设置为刷题模式
+              navigate('/study');       // 跳转到学习页面
+            }}
+          >
             开始刷题
           </Button>
         </Space>

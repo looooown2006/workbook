@@ -12,7 +12,8 @@ import {
   Statistic,
   Alert,
   Tooltip,
-  Empty
+  Empty,
+  message
 } from 'antd';
 import {
   BulbOutlined,
@@ -26,6 +27,7 @@ import {
 } from '@ant-design/icons';
 import { useAppStore } from '../../stores/useAppStore';
 import { Question, WrongQuestion } from '../../types';
+import { useNavigate } from 'react-router-dom';
 
 const { Title, Text } = Typography;
 
@@ -47,11 +49,13 @@ const SmartRecommendation: React.FC = () => {
     userStats,
     // getWrongQuestions,
     getQuestions,
-    getUserStats
+    getUserStats,
+    setStudyMode
   } = useAppStore();
 
   const [recommendations, setRecommendations] = useState<RecommendationItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadRecommendations();
@@ -238,9 +242,14 @@ const SmartRecommendation: React.FC = () => {
   };
 
   const handleStartRecommendation = (rec: RecommendationItem) => {
-    // 这里应该启动推荐的学习会话
-    console.log('开始推荐学习:', rec);
-    // 可以导航到学习页面，并传入推荐的题目
+    if (!rec.questions || rec.questions.length === 0) {
+      message.warning('没有可学习的题目');
+      return;
+    }
+    setStudyMode('practice'); // 无论推荐类型，统一进入刷题模式
+    setTimeout(() => {
+    navigate('/study', { state: { questionIds: rec.questions.map(q => q.id) } });
+  }, 0);
   };
 
   const getRecommendationIcon = (type: RecommendationItem['type']) => {

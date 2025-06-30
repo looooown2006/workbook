@@ -8,7 +8,7 @@ import WrongQuestionReviewMode from '../components/Study/WrongQuestionReviewMode
 
 const StudyPage: React.FC = () => {
   const location = useLocation();
-
+  
   // 根据路由直接渲染对应的组件，不依赖 studyMode 状态
   switch (location.pathname) {
     case '/study':
@@ -18,7 +18,7 @@ const StudyPage: React.FC = () => {
     case '/quick-study':
       return <QuickStudyMode />; // 快刷模式
     default:
-      return <StudyMode />; // 默认显示背题模式
+      return <PracticeMode />; // 默认显示刷题模式
   }
 };
 

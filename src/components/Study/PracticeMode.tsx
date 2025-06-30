@@ -4,24 +4,36 @@ import { ArrowLeftOutlined, ArrowRightOutlined, CheckCircleOutlined, CloseCircle
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '../../stores/useAppStore';
 import EmptyState from '../Common/EmptyState';
+import { Question } from '../../types';
 
 const { Title, Text, Paragraph } = Typography;
 
-const PracticeMode: React.FC = () => {
+interface PracticeModeProps {
+  questions?: Question[];
+}
+
+const PracticeMode: React.FC<PracticeModeProps> = ({ questions: propQuestions }) => {
   const navigate = useNavigate();
   const { 
     currentBank, 
     currentChapter, 
-    questions, 
+    questions: storeQuestions, 
     submitAnswer,
-    addWrongQuestion 
+    addWrongQuestion,
+    answerRecords,
+    loadAnswerRecords
   } = useAppStore();
+
+  // 优先使用props传入的questions，否则用store中的questions
+  const questions = propQuestions ?? storeQuestions;
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showAnswer, setShowAnswer] = useState(false);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [startTime, setStartTime] = useState(new Date());
+  // 新增：记录每题答题状态
+  const [answersMap, setAnswersMap] = useState<{ [id: string]: { selectedAnswer: number, isCorrect: boolean, showAnswer: boolean } }>({});
 
   // 过滤当前章节的题目
   const filteredQuestions = questions.filter(q =>
@@ -32,24 +44,65 @@ const PracticeMode: React.FC = () => {
   const question = filteredQuestions[currentIndex];
 
   useEffect(() => {
-    // 只有在有题库、章节和题目时才重置状态
     if (currentBank && currentChapter && filteredQuestions.length > 0) {
-      // 重置状态
-      setSelectedAnswer(null);
-      setShowAnswer(false);
-      setIsCorrect(null);
+      const qid = question?.id;
+      if (qid && answersMap[qid]) {
+        setSelectedAnswer(answersMap[qid].selectedAnswer);
+        setShowAnswer(answersMap[qid].showAnswer);
+        setIsCorrect(answersMap[qid].isCorrect);
+      } else {
+        setSelectedAnswer(null);
+        setShowAnswer(false);
+        setIsCorrect(null);
+      }
       setStartTime(new Date());
     }
-  }, [currentIndex, currentBank, currentChapter, filteredQuestions.length]);
+  }, [currentIndex, currentBank, currentChapter, filteredQuestions.length, question, answersMap]);
+
+  useEffect(() => {
+    if (currentBank && currentChapter) {
+      loadAnswerRecords();
+    }
+  }, [currentBank, currentChapter, loadAnswerRecords]);
+
+  useEffect(() => {
+    if (filteredQuestions.length === 0) {
+      setCurrentIndex(0);
+    } else if (currentIndex >= filteredQuestions.length) {
+      setCurrentIndex(0);
+    }
+  }, [filteredQuestions]);
+
+  //只在章节、题库、props.questions变化时重置 currentIndex
+  useEffect(() => {
+    setCurrentIndex(0);
+  }, [currentBank, currentChapter, propQuestions]);
+
+  // 仅在 currentIndex 超界时重置
+  useEffect(() => {
+    if (currentIndex >= filteredQuestions.length) {
+      setCurrentIndex(0);
+    }
+  }, [filteredQuestions, currentIndex]);
 
   const handleAnswerSelect = useCallback(async (answerIndex: number) => {
     if (showAnswer || !question) return;
 
     setSelectedAnswer(answerIndex);
     setShowAnswer(true);
-    
+
     const correct = answerIndex === question.correctAnswer;
     setIsCorrect(correct);
+
+    // 记录本题答题状态
+    setAnswersMap(prev => ({
+      ...prev,
+      [question.id]: {
+        selectedAnswer: answerIndex,
+        isCorrect: correct,
+        showAnswer: true
+      }
+    }));
 
     // 计算答题时间
     const timeSpent = Math.round((new Date().getTime() - startTime.getTime()) / 1000);

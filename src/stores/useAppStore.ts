@@ -97,6 +97,10 @@ interface AppStore extends AppState {
 
   // Actions - 初始化
   initializeApp: () => Promise<void>;
+
+  // Actions - 答题记录
+  loadAnswerRecords: () => Promise<void>;
+
 }
 
 export const useAppStore = create<AppStore>((set, get) => ({
@@ -120,6 +124,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
   // 学习计划初始状态
   studyPlans: [],
+
 
   // 题库管理
   loadQuestionBanks: async () => {
@@ -454,9 +459,11 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
   // 答题相关
   submitAnswer: async (questionId, selectedAnswer, timeSpent) => {
+    console.log('submitAnswer 被调用', questionId, selectedAnswer, timeSpent);
     try {
       const { currentQuestion, studyMode, currentBank, currentChapter } = get();
-      if (!currentQuestion || !currentBank || !currentChapter) return;
+      if (!currentQuestion || !currentBank || !currentChapter) 
+        return;
 
       const isCorrect = selectedAnswer === currentQuestion.correctAnswer;
       
@@ -474,6 +481,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
       };
       
       await dbManager.add(DB_KEYS.ANSWER_RECORDS, record);
+      console.log('已写入答题记录', record);
       
       // 更新题目状态
       const updatedQuestion: Question = {
@@ -826,5 +834,15 @@ export const useAppStore = create<AppStore>((set, get) => ({
   // 用户统计相关方法（临时实现）
   userStats: undefined,
   getQuestions: () => get().questions,
-  getUserStats: () => ({ totalQuestions: 0, correctRate: 0 })
+  getUserStats: () => ({ totalQuestions: 0, correctRate: 0 }),
+
+  // Actions - 答题记录
+  loadAnswerRecords: async () => {
+    try {
+      const records = await dbManager.getAll(DB_KEYS.ANSWER_RECORDS) as AnswerRecord[];
+      set({ answerRecords: records });
+    } catch (error) {
+      set({ error: '加载答题记录失败' });
+    }
+  }
 }));
