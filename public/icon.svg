@@ -1,0 +1,21 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- 背景圆形 -->
+  <circle cx="256" cy="256" r="240" fill="#1890ff"/>
+  
+  <!-- 书本图标 -->
+  <rect x="160" y="140" width="192" height="232" rx="8" fill="white"/>
+  <rect x="180" y="160" width="152" height="4" rx="2" fill="#1890ff"/>
+  <rect x="180" y="180" width="152" height="4" rx="2" fill="#1890ff"/>
+  <rect x="180" y="200" width="152" height="4" rx="2" fill="#1890ff"/>
+  <rect x="180" y="220" width="152" height="4" rx="2" fill="#1890ff"/>
+  
+  <!-- 问号图标 -->
+  <circle cx="256" cy="280" r="40" fill="#1890ff"/>
+  <text x="256" y="300" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="48" font-weight="bold">?</text>
+  
+  <!-- 装饰元素 -->
+  <circle cx="200" cy="320" r="6" fill="#52c41a"/>
+  <circle cx="220" cy="340" r="6" fill="#faad14"/>
+  <circle cx="292" cy="340" r="6" fill="#faad14"/>
+  <circle cx="312" cy="320" r="6" fill="#52c41a"/>
+</svg>

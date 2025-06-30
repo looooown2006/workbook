@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>生成PWA图标</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        canvas { border: 1px solid #ccc; margin: 10px; }
+        .icon-container { display: flex; flex-wrap: wrap; gap: 20px; }
+        .icon-item { text-align: center; }
+        button { padding: 10px 20px; margin: 5px; background: #1890ff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #40a9ff; }
+    </style>
+</head>
+<body>
+    <h1>PWA图标生成器</h1>
+    <p>点击下面的按钮生成并下载PWA所需的图标文件</p>
+    
+    <div class="icon-container">
+        <div class="icon-item">
+            <h3>192x192</h3>
+            <canvas id="canvas192" width="192" height="192"></canvas>
+            <br>
+            <button onclick="downloadIcon(192)">下载 192x192</button>
+        </div>
+        
+        <div class="icon-item">
+            <h3>512x512</h3>
+            <canvas id="canvas512" width="512" height="512"></canvas>
+            <br>
+            <button onclick="downloadIcon(512)">下载 512x512</button>
+        </div>
+        
+        <div class="icon-item">
+            <h3>Favicon (32x32)</h3>
+            <canvas id="canvas32" width="32" height="32"></canvas>
+            <br>
+            <button onclick="downloadIcon(32, 'favicon.ico')">下载 Favicon</button>
+        </div>
+    </div>
+    
+    <button onclick="generateAll()">生成所有图标</button>
+
+    <script>
+        function drawIcon(canvas, size) {
+            const ctx = canvas.getContext('2d');
+            const scale = size / 512;
+            
+            // 清除画布
+            ctx.clearRect(0, 0, size, size);
+            
+            // 背景圆形
+            ctx.fillStyle = '#1890ff';
+            ctx.beginPath();
+            ctx.arc(size/2, size/2, 240 * scale, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // 书本背景
+            ctx.fillStyle = 'white';
+            ctx.fillRect(160 * scale, 140 * scale, 192 * scale, 232 * scale);
+            
+            // 书本线条
+            ctx.fillStyle = '#1890ff';
+            for (let i = 0; i < 4; i++) {
+                ctx.fillRect(180 * scale, (160 + i * 20) * scale, 152 * scale, 4 * scale);
+            }
+            
+            // 问号圆形背景
+            ctx.fillStyle = '#1890ff';
+            ctx.beginPath();
+            ctx.arc(256 * scale, 280 * scale, 40 * scale, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // 问号文字
+            ctx.fillStyle = 'white';
+            ctx.font = `bold ${48 * scale}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('?', 256 * scale, 280 * scale);
+            
+            // 装饰圆点
+            const colors = ['#52c41a', '#faad14', '#faad14', '#52c41a'];
+            const positions = [
+                [200 * scale, 320 * scale],
+                [220 * scale, 340 * scale],
+                [292 * scale, 340 * scale],
+                [312 * scale, 320 * scale]
+            ];
+            
+            positions.forEach((pos, i) => {
+                ctx.fillStyle = colors[i];
+                ctx.beginPath();
+                ctx.arc(pos[0], pos[1], 6 * scale, 0, 2 * Math.PI);
+                ctx.fill();
+            });
+        }
+        
+        function downloadIcon(size, filename) {
+            const canvas = document.getElementById(`canvas${size}`);
+            const link = document.createElement('a');
+            link.download = filename || `pwa-${size}x${size}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+        
+        function generateAll() {
+            drawIcon(document.getElementById('canvas192'), 192);
+            drawIcon(document.getElementById('canvas512'), 512);
+            drawIcon(document.getElementById('canvas32'), 32);
+            
+            setTimeout(() => {
+                downloadIcon(192);
+                setTimeout(() => downloadIcon(512), 500);
+                setTimeout(() => downloadIcon(32, 'favicon.ico'), 1000);
+            }, 100);
+        }
+        
+        // 初始化生成图标
+        window.onload = function() {
+            drawIcon(document.getElementById('canvas192'), 192);
+            drawIcon(document.getElementById('canvas512'), 512);
+            drawIcon(document.getElementById('canvas32'), 32);
+        };
+    </script>
+</body>
+</html>

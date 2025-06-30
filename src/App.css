@@ -1,0 +1,257 @@
+/* 全局样式重置 */
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  background-color: #f0f2f5;
+}
+
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* 应用主容器 */
+.app-container {
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Ant Design 组件样式覆盖 */
+.ant-layout {
+  background: #f0f2f5;
+}
+
+.ant-layout-header {
+  padding: 0;
+}
+
+.ant-layout-sider {
+  background: #fff;
+}
+
+.ant-layout-content {
+  background: #fff;
+}
+
+/* 响应式断点 */
+@media (max-width: 576px) {
+  .ant-layout-sider {
+    position: fixed !important;
+    z-index: 999;
+    height: 100vh;
+  }
+}
+
+/* 加载动画 */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #1890ff;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+}
+
+/* 工具类 */
+.text-center {
+  text-align: center;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.mb-16 {
+  margin-bottom: 16px;
+}
+
+.mb-24 {
+  margin-bottom: 24px;
+}
+
+.mt-16 {
+  margin-top: 16px;
+}
+
+.mt-24 {
+  margin-top: 24px;
+}
+
+.p-16 {
+  padding: 16px;
+}
+
+.p-24 {
+  padding: 24px;
+}
+
+/* 卡片阴影效果 */
+.card-shadow {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+.card-shadow:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: box-shadow 0.3s ease;
+}
+
+/* 按钮样式增强 */
+.ant-btn {
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.ant-btn-primary {
+  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+  border: none;
+}
+
+.ant-btn-primary:hover {
+  background: linear-gradient(135deg, #40a9ff 0%, #1890ff 100%);
+}
+
+/* 输入框样式增强 */
+.ant-input,
+.ant-input-affix-wrapper {
+  border-radius: 6px;
+}
+
+.ant-input:focus,
+.ant-input-affix-wrapper:focus {
+  border-color: #1890ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+/* 选择器样式增强 */
+.ant-select-selector {
+  border-radius: 6px !important;
+}
+
+/* 模态框样式增强 */
+.ant-modal-content {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.ant-modal-header {
+  border-radius: 8px 8px 0 0;
+}
+
+/* 表格样式增强 */
+.ant-table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.ant-table-thead > tr > th {
+  background: #fafafa;
+  font-weight: 600;
+}
+
+/* 消息提示样式增强 */
+.ant-message {
+  top: 80px;
+}
+
+/* 抽屉样式增强 */
+.ant-drawer-content {
+  border-radius: 8px 0 0 8px;
+}
+
+/* 进度条样式增强 */
+.ant-progress-line {
+  border-radius: 4px;
+}
+
+/* 标签样式增强 */
+.ant-tag {
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+/* 侧边栏样式 */
+.function-sidebar {
+  background: #001529 !important;
+}
+
+.function-sidebar .ant-layout-sider-trigger {
+  background: #002140 !important;
+  border-top: 1px solid #303030;
+}
+
+.function-menu-container {
+  height: 100%;
+  padding-top: 16px;
+}
+
+.function-menu {
+  background: transparent !important;
+  border: none !important;
+}
+
+.function-menu .ant-menu-item {
+  margin: 4px 8px !important;
+  border-radius: 6px !important;
+  height: 48px !important;
+  line-height: 48px !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.function-menu .ant-menu-item-icon {
+  font-size: 18px !important;
+  margin-right: 12px !important;
+}
+
+/* 折叠状态下的样式 */
+.ant-layout-sider-collapsed .function-menu .ant-menu-item {
+  padding: 0 !important;
+  justify-content: center !important;
+}
+
+.ant-layout-sider-collapsed .function-menu .ant-menu-item-icon {
+  margin-right: 0 !important;
+  font-size: 20px !important;
+}
+
+.ant-layout-sider-collapsed .function-menu .ant-menu-item > span:last-child {
+  display: none !important;
+}
