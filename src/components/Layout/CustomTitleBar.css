@@ -1,0 +1,99 @@
+.custom-title-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 32px;
+  background: #ffffff;
+  border-bottom: 1px solid #e8e8e8;
+  user-select: none;
+  position: relative;
+  z-index: 1000;
+}
+
+.title-bar-drag-region {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  padding-left: 12px;
+  -webkit-app-region: drag; /* 允许拖拽窗口 */
+}
+
+.title-bar-title {
+  font-size: 13px;
+  color: #333;
+  font-weight: 500;
+}
+
+.title-bar-controls {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  -webkit-app-region: no-drag; /* 控制按钮区域不允许拖拽 */
+}
+
+.title-bar-button {
+  width: 46px !important;
+  height: 32px !important;
+  border-radius: 0 !important;
+  border: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: background-color 0.2s ease !important;
+}
+
+.title-bar-button:hover {
+  background-color: #e5e5e5 !important;
+}
+
+.title-bar-button:active {
+  background-color: #ccc !important;
+}
+
+.title-bar-button.close-button:hover {
+  background-color: #e81123 !important;
+  color: white !important;
+}
+
+.title-bar-button.close-button:active {
+  background-color: #c50e1f !important;
+  color: white !important;
+}
+
+.title-bar-button .anticon {
+  font-size: 12px;
+}
+
+/* 深色主题支持 */
+@media (prefers-color-scheme: dark) {
+  .custom-title-bar {
+    background: #2f2f2f;
+    border-bottom-color: #404040;
+  }
+  
+  .title-bar-title {
+    color: #ffffff;
+  }
+  
+  .title-bar-button:hover {
+    background-color: #404040 !important;
+  }
+  
+  .title-bar-button:active {
+    background-color: #555 !important;
+  }
+}
+
+/* 确保在Electron环境下的样式 */
+.electron-app .custom-title-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+}
+
+.electron-app .main-layout {
+  padding-top: 32px; /* 为标题栏留出空间 */
+}

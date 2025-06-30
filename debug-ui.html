@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UI调试指南</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .debug-section {
+            background: #f5f5f5;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border-left: 4px solid #1890ff;
+        }
+        .step {
+            margin: 15px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 4px;
+        }
+        .step-number {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            background: #1890ff;
+            color: white;
+            text-align: center;
+            border-radius: 50%;
+            margin-right: 10px;
+            line-height: 24px;
+            font-size: 12px;
+        }
+        .code {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            margin: 10px 0;
+        }
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>🐛 UI显示问题调试指南</h1>
+    
+    <div class="debug-section">
+        <h2>🎯 当前问题</h2>
+        <p>右侧主内容区域显示空白，可能的原因：</p>
+        <ul>
+            <li>QuestionGrid组件没有被渲染</li>
+            <li>currentChapter状态没有正确设置</li>
+            <li>CSS样式问题导致内容不可见</li>
+            <li>JavaScript错误阻止了渲染</li>
+        </ul>
+    </div>
+
+    <div class="debug-section">
+        <h2>🔍 调试步骤</h2>
+        
+        <div class="step">
+            <span class="step-number">1</span>
+            <strong>打开浏览器开发者工具</strong>
+            <p>按 <span class="highlight">F12</span> 或右键点击页面选择"检查"</p>
+        </div>
+
+        <div class="step">
+            <span class="step-number">2</span>
+            <strong>查看控制台输出</strong>
+            <p>在Console标签中查看调试信息：</p>
+            <div class="code">
+MainLayout render: {isHomePage: true, currentBank: "学员", currentChapter: "学员", pathname: "/"}
+QuestionGrid render: {currentChapter: "学员", questionsCount: 0, questionsLoading: false}
+            </div>
+        </div>
+
+        <div class="step">
+            <span class="step-number">3</span>
+            <strong>检查页面元素</strong>
+            <p>在Elements标签中查看是否有调试边框：</p>
+            <ul>
+                <li><span class="highlight">绿色边框</span>：主内容区域</li>
+                <li><span class="highlight">蓝色边框</span>：有题目时的显示</li>
+                <li><span class="highlight">橙色边框</span>：无题目时的显示</li>
+                <li><span class="highlight">红色边框</span>：未选择章节时的显示</li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <span class="step-number">4</span>
+            <strong>测试章节选择</strong>
+            <p>点击左侧的章节卡片，观察：</p>
+            <ul>
+                <li>章节是否被正确选中（蓝色边框）</li>
+                <li>右侧内容是否发生变化</li>
+                <li>控制台是否有新的调试信息</li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <span class="step-number">5</span>
+            <strong>检查网络请求</strong>
+            <p>在Network标签中查看是否有失败的请求</p>
+        </div>
+
+        <div class="step">
+            <span class="step-number">6</span>
+            <strong>测试导入功能</strong>
+            <p>如果右侧显示"该章节暂无题目"，尝试：</p>
+            <ul>
+                <li>点击"智能导入助手"按钮</li>
+                <li>输入测试题目并导入</li>
+                <li>观察导入后右侧是否显示题目</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="debug-section">
+        <h2>🧪 测试数据</h2>
+        <p>如果需要测试导入功能，可以使用以下测试题目：</p>
+        <div class="code">
+1. JavaScript中用于声明变量的关键字是？
+A. var
+B. let  
+C. const
+D. 以上都是
+答案：D
+解析：JavaScript中var、let、const都可以用来声明变量。
+
+2. CSS中设置文字颜色的属性是？
+A. color
+B. font-color
+C. text-color
+D. background-color
+答案：A
+解析：CSS中使用color属性设置文字颜色。
+        </div>
+    </div>
+
+    <div class="debug-section">
+        <h2>🔧 可能的解决方案</h2>
+        
+        <div class="step">
+            <span class="step-number">1</span>
+            <strong>如果currentChapter为null</strong>
+            <p>检查章节选择逻辑，确保setCurrentChapter被正确调用</p>
+        </div>
+
+        <div class="step">
+            <span class="step-number">2</span>
+            <strong>如果组件没有渲染</strong>
+            <p>检查条件渲染逻辑，确保QuestionGrid组件被包含在渲染树中</p>
+        </div>
+
+        <div class="step">
+            <span class="step-number">3</span>
+            <strong>如果有CSS问题</strong>
+            <p>检查.main-content的样式，确保没有display:none或visibility:hidden</p>
+        </div>
+
+        <div class="step">
+            <span class="step-number">4</span>
+            <strong>如果有JavaScript错误</strong>
+            <p>查看控制台错误信息，修复相关问题</p>
+        </div>
+    </div>
+
+    <div class="debug-section">
+        <h2>📱 当前应用地址</h2>
+        <p>应用正在运行在：<a href="http://localhost:5176/" target="_blank">http://localhost:5176/</a></p>
+        <p>点击链接打开应用，然后按照上述步骤进行调试。</p>
+    </div>
+
+    <script>
+        // 自动打开应用
+        setTimeout(() => {
+            if (confirm('是否要打开刷题应用进行调试？')) {
+                window.open('http://localhost:5176/', '_blank');
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

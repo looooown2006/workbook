@@ -1,0 +1,613 @@
+/* 主布局样式 */
+/* 全局背景修复 */
+html, body, #root {
+  background: white !important;
+  height: 100vh !important; /* 使用视口高度 */
+  width: 100vw !important; /* 使用视口宽度 */
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow-x: hidden !important; /* 防止水平滚动 */
+  overflow-y: auto !important; /* 允许垂直滚动 */
+}
+
+.main-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100vw !important; /* 确保填满整个视口宽度 */
+  z-index: 1000;
+  padding: 0;
+  height: 64px;
+  line-height: 64px;
+  background: #001529;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Electron环境下的样式调整 */
+.electron-layout .main-header {
+  top: 32px; /* 为自定义标题栏留出空间 */
+}
+
+.electron-app {
+  overflow: hidden; /* 防止滚动条 */
+}
+
+.electron-app .ant-layout {
+  min-height: calc(100vh - 32px); /* 减去标题栏高度 */
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+  padding: 0 24px;
+  width: 100% !important; /* 填满整个宽度 */
+  max-width: none !important; /* 移除最大宽度限制 */
+  margin: 0;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+}
+
+.desktop-menu {
+  border-bottom: none;
+  background: transparent;
+}
+
+.mobile-menu-trigger {
+  display: none;
+  color: white;
+}
+
+/* 侧边栏样式 */
+.function-sidebar {
+  position: fixed; /* 固定定位，不随页面滚动 */
+  top: 64px; /* 位于顶部导航栏下方 */
+  left: 0; /* 贴左边 */
+  width: 240px; /* 固定宽度 */
+  height: calc(100vh - 64px);
+  overflow: hidden; /* 隐藏滚动条，因为菜单项不会超出容器 */
+  background: linear-gradient(180deg, #001529 0%, #002140 100%) !important; /* 渐变背景 */
+  border-right: 1px solid #1890ff20;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15); /* 添加阴影 */
+  z-index: 100;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* 更流畅的过渡动画 */
+}
+
+/* 折叠状态下的样式 */
+.function-sidebar.ant-layout-sider-collapsed {
+  width: 64px !important; /* 折叠后的宽度，增加一些空间 */
+}
+
+/* 折叠状态下的菜单项样式 */
+.function-sidebar.ant-layout-sider-collapsed .function-menu .ant-menu-item {
+  margin: 6px 8px !important; /* 折叠时的边距 */
+  padding: 16px 8px !important; /* 折叠时的内边距 */
+  text-align: center !important; /* 图标居中 */
+  justify-content: center !important; /* 内容居中 */
+  border-radius: 12px !important; /* 更大的圆角 */
+  transform: none !important; /* 重置变换 */
+}
+
+.function-sidebar.ant-layout-sider-collapsed .function-menu .ant-menu-item:hover {
+  transform: scale(1.05) !important; /* 折叠时悬停缩放 */
+}
+
+.function-sidebar.ant-layout-sider-collapsed .function-menu .ant-menu-item-selected {
+  transform: scale(1.1) !important; /* 折叠时选中缩放 */
+}
+
+.function-sidebar.ant-layout-sider-collapsed .function-menu .ant-menu-item-icon {
+  margin-right: 0 !important; /* 折叠时移除图标右边距 */
+  font-size: 22px !important; /* 折叠时增大图标 */
+}
+
+/* 折叠状态下的触发器样式 */
+.function-sidebar .ant-layout-sider-trigger {
+  background: linear-gradient(135deg, #1890ff 0%, #40a9ff 100%) !important; /* 渐变背景 */
+  color: white !important;
+  border-top: 1px solid rgba(24, 144, 255, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  height: 56px !important; /* 增加触发器高度 */
+  line-height: 56px !important; /* 垂直居中 */
+  font-size: 18px !important; /* 增大图标 */
+  box-shadow: 0 -2px 8px rgba(24, 144, 255, 0.2); /* 上方阴影 */
+}
+
+.function-sidebar .ant-layout-sider-trigger:hover {
+  background: linear-gradient(135deg, #40a9ff 0%, #1890ff 100%) !important; /* 悬停渐变 */
+  transform: translateY(-2px) !important; /* 悬停上移 */
+  box-shadow: 0 -4px 16px rgba(24, 144, 255, 0.3) !important; /* 悬停阴影 */
+}
+
+.bank-sidebar {
+  margin-top: 64px;
+  margin-left: 240px; /* 为固定的左侧导航栏留出空间 */
+  height: calc(100vh - 64px);
+  overflow-y: auto;
+  background: #f0f2f5;
+  border-right: 1px solid #d9d9d9;
+  flex: 0 0 280px; /* 固定宽度，不伸缩 */
+  position: relative;
+  transition: margin-left 0.2s ease; /* 添加过渡动画 */
+}
+
+.chapter-sidebar {
+  margin-top: 64px;
+  margin-left: 240px; /* 为固定的左侧导航栏留出空间 */
+  height: calc(100vh - 64px);
+  overflow-y: auto;
+  background: white;
+  border-right: 1px solid #d9d9d9;
+  flex: 0 0 280px; /* 固定宽度，不伸缩 */
+  position: relative;
+  transition: margin-left 0.2s ease; /* 添加过渡动画 */
+}
+
+/* 功能菜单样式 */
+.function-menu-container {
+  padding: 16px 8px; /* 增加内边距 */
+}
+
+.function-menu {
+  background: transparent !important; /* 透明背景，显示渐变 */
+  border-right: none;
+}
+
+/* 菜单项样式美化 */
+.function-menu .ant-menu-item {
+  margin: 4px 8px !important; /* 增加外边距 */
+  padding: 12px 16px !important; /* 增加内边距 */
+  border-radius: 8px !important; /* 圆角 */
+  height: auto !important; /* 自动高度 */
+  line-height: 1.4 !important; /* 行高 */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important; /* 流畅过渡 */
+  color: rgba(255, 255, 255, 0.85) !important; /* 半透明白色 */
+  font-weight: 500 !important; /* 字体加粗 */
+}
+
+.function-menu .ant-menu-item:hover {
+  background: rgba(24, 144, 255, 0.15) !important; /* 悬停背景 */
+  color: #ffffff !important; /* 悬停文字颜色 */
+  transform: translateX(4px) !important; /* 悬停时轻微右移 */
+  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.2) !important; /* 悬停阴影 */
+}
+
+.function-menu .ant-menu-item-selected {
+  background: linear-gradient(135deg, #1890ff 0%, #40a9ff 100%) !important; /* 选中状态渐变背景 */
+  color: #ffffff !important; /* 选中文字颜色 */
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3) !important; /* 选中阴影 */
+  transform: translateX(6px) !important; /* 选中时右移 */
+}
+
+.function-menu .ant-menu-item-selected::after {
+  display: none !important; /* 隐藏默认的选中指示器 */
+}
+
+/* 菜单图标样式 */
+.function-menu .ant-menu-item-icon {
+  font-size: 18px !important; /* 图标大小 */
+  margin-right: 12px !important; /* 图标右边距 */
+  transition: all 0.3s ease !important; /* 图标过渡 */
+}
+
+.function-menu .ant-menu-item:hover .ant-menu-item-icon {
+  transform: scale(1.1) !important; /* 悬停时图标放大 */
+}
+
+.function-menu .ant-menu-item-selected .ant-menu-item-icon {
+  transform: scale(1.15) !important; /* 选中时图标放大 */
+}
+
+.function-menu .ant-menu-item {
+  color: rgba(255, 255, 255, 0.95) !important; /* 增加文字不透明度 */
+  background-color: rgba(255, 255, 255, 0.1) !important; /* 增加背景不透明度 */
+  margin: 3px 12px; /* 调整外边距：减少垂直间距，增加水平间距 */
+  padding: 8px 16px; /* 调整内边距：减少垂直内边距 */
+  height: 40px; /* 设置固定高度 */
+  line-height: 24px; /* 调整行高 */
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2); /* 增加边框不透明度 */
+  display: flex;
+  align-items: center; /* 垂直居中对齐 */
+}
+
+.function-menu .ant-menu-item:hover {
+  background-color: rgba(255, 255, 255, 0.25) !important; /* 增加悬停背景不透明度 */
+  color: white !important;
+  border-color: rgba(255, 255, 255, 0.4); /* 增加悬停边框不透明度 */
+}
+
+.function-menu .ant-menu-item-selected {
+  background-color: #1890ff !important;
+  color: white !important;
+  border-color: #1890ff;
+  box-shadow: 0 2px 4px rgba(24, 144, 255, 0.3); /* 添加阴影增强可见性 */
+}
+
+.function-menu .ant-menu-item-icon {
+  font-size: 18px; /* 增加图标大小 */
+  color: inherit !important;
+  margin-right: 8px; /* 图标与文字间距 */
+  min-width: 18px; /* 确保图标有固定宽度 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.function-menu .ant-menu-item .ant-menu-title-content {
+  color: inherit !important;
+  font-size: 14px; /* 设置文字大小 */
+  font-weight: 500; /* 稍微加粗文字 */
+}
+
+/* 主内容区域 */
+.main-content {
+  margin-top: 64px;
+  margin-left: 240px; /* 为固定的左侧导航栏留出空间 */
+  padding: 24px;
+  background: white;
+  overflow-y: auto;
+  height: calc(100vh - 64px);
+  width: calc(100% - 240px) !important; /* 减去左侧导航栏宽度 */
+  flex: 1 1 auto;
+  min-width: 0;
+  position: relative;
+  transition: margin-left 0.2s ease, width 0.2s ease; /* 添加过渡动画 */
+}
+
+/* 当导航栏折叠时的主内容区域样式 */
+.ant-layout-has-sider .main-content {
+  margin-left: 240px; /* 默认状态 */
+  width: calc(100% - 240px) !important;
+}
+
+/* 导航栏折叠时的样式 - 通过JavaScript动态添加类名 */
+.sidebar-collapsed .main-content {
+  margin-left: 64px !important; /* 折叠后的左边距，匹配新的折叠宽度 */
+  width: calc(100% - 64px) !important; /* 折叠后的宽度 */
+}
+
+.sidebar-collapsed .page-content {
+  margin-left: 64px !important; /* 折叠后的左边距，匹配新的折叠宽度 */
+  width: calc(100% - 64px) !important; /* 折叠后的宽度 */
+}
+
+.sidebar-collapsed .bank-sidebar {
+  margin-left: 64px !important; /* 折叠后的左边距 */
+  width: 280px !important; /* 保持固定宽度 */
+}
+
+.sidebar-collapsed .chapter-sidebar {
+  margin-left: 64px !important; /* 折叠后的左边距 */
+  width: 280px !important; /* 保持固定宽度 */
+}
+
+.page-content {
+  margin-top: 64px;
+  margin-left: 240px; /* 为固定的左侧导航栏留出空间 */
+  padding: 24px;
+  background: white;
+  height: calc(100vh - 64px);
+  width: calc(100% - 240px) !important; /* 减去左侧导航栏宽度 */
+  flex: 1 1 auto;
+  min-width: 0;
+  position: relative;
+  overflow-y: auto;
+  transition: margin-left 0.2s ease, width 0.2s ease; /* 添加过渡动画 */
+}
+
+/* 空状态样式 */
+.empty-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  min-height: 400px;
+  width: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.empty-text {
+  font-size: 18px;
+  color: #999;
+  text-align: center;
+  white-space: nowrap; /* 防止文字换行 */
+}
+
+/* 移动端菜单抽屉 */
+.mobile-menu-drawer .ant-drawer-body {
+  padding: 0;
+}
+
+.mobile-menu-drawer .ant-menu {
+  border-right: none;
+}
+
+/* 响应式设计 */
+@media (max-width: 1024px) {
+  /* 中等屏幕：隐藏应用标题，保留菜单 */
+  .header-left h3 {
+    display: none;
+  }
+}
+
+@media (max-width: 992px) {
+  .desktop-menu {
+    display: none;
+  }
+
+  .mobile-menu-trigger {
+    display: inline-flex;
+  }
+
+  .header-content {
+    padding: 0 16px;
+  }
+
+  /* 小屏幕：完全隐藏应用标题 */
+  .header-left h3 {
+    display: none !important;
+  }
+  
+  .function-sidebar {
+    position: fixed;
+    left: -240px;
+    transition: left 0.3s ease;
+    z-index: 999;
+  }
+
+  .function-sidebar.open {
+    left: 0;
+  }
+
+  .bank-sidebar,
+  .chapter-sidebar {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: none !important;
+  }
+  
+  .main-content {
+    margin-left: 0; /* 移动端时不需要左边距 */
+    width: 100% !important; /* 移动端时占满宽度 */
+    padding: 16px;
+  }
+
+  .page-content {
+    margin-left: 0; /* 移动端时不需要左边距 */
+    width: 100% !important; /* 移动端时占满宽度 */
+    padding: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  /* 平板屏幕：隐藏应用标题 */
+  .header-left h3 {
+    display: none !important;
+  }
+
+  .main-content {
+    margin-left: 0; /* 移动端时不需要左边距 */
+    width: 100% !important; /* 移动端时占满宽度 */
+    padding: 12px;
+  }
+
+  .page-content {
+    margin-left: 0; /* 移动端时不需要左边距 */
+    width: 100% !important; /* 移动端时占满宽度 */
+    padding: 12px;
+  }
+}
+
+@media (max-width: 576px) {
+  .header-content {
+    padding: 0 12px;
+  }
+
+  /* 手机屏幕：确保应用标题隐藏 */
+  .header-left h3 {
+    display: none !important;
+  }
+  
+  .main-content {
+    margin-left: 0; /* 移动端时不需要左边距 */
+    width: 100% !important; /* 移动端时占满宽度 */
+    padding: 8px;
+  }
+
+  .page-content {
+    margin-left: 0; /* 移动端时不需要左边距 */
+    width: 100% !important; /* 移动端时占满宽度 */
+    padding: 8px;
+  }
+}
+
+/* 滚动条样式 */
+.function-sidebar::-webkit-scrollbar,
+.bank-sidebar::-webkit-scrollbar,
+.chapter-sidebar::-webkit-scrollbar,
+.main-content::-webkit-scrollbar,
+.page-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.function-sidebar::-webkit-scrollbar-track,
+.bank-sidebar::-webkit-scrollbar-track,
+.chapter-sidebar::-webkit-scrollbar-track,
+.main-content::-webkit-scrollbar-track,
+.page-content::-webkit-scrollbar-track {
+  background: transparent; /* 修改为透明，避免黑色区域 */
+}
+
+.function-sidebar::-webkit-scrollbar-thumb,
+.bank-sidebar::-webkit-scrollbar-thumb,
+.chapter-sidebar::-webkit-scrollbar-thumb,
+.main-content::-webkit-scrollbar-thumb,
+.page-content::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.function-sidebar::-webkit-scrollbar-thumb:hover,
+.bank-sidebar::-webkit-scrollbar-thumb:hover,
+.chapter-sidebar::-webkit-scrollbar-thumb:hover,
+.main-content::-webkit-scrollbar-thumb:hover,
+.page-content::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* 修复滚动区域的角落 */
+.function-sidebar::-webkit-scrollbar-corner,
+.bank-sidebar::-webkit-scrollbar-corner,
+.chapter-sidebar::-webkit-scrollbar-corner,
+.main-content::-webkit-scrollbar-corner,
+.page-content::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Layout容器样式 */
+.ant-layout {
+  display: flex !important;
+  flex-direction: row !important;
+  width: 100vw !important; /* 使用视口宽度 */
+  height: 100vh !important; /* 使用视口高度 */
+  background: white !important;
+  overflow-x: hidden !important; /* 防止水平溢出 */
+  overflow-y: auto !important; /* 允许垂直滚动 */
+}
+
+.ant-layout-has-sider {
+  display: flex !important;
+  flex-direction: row !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: white !important;
+  overflow-x: hidden !important; /* 防止水平溢出 */
+  overflow-y: auto !important; /* 允许垂直滚动 */
+}
+
+/* 确保Content组件占用剩余空间 */
+.ant-layout-content {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  width: auto !important;
+  height: 100vh !important; /* 填满视口高度 */
+  background: white !important;
+  position: relative !important;
+  overflow-x: hidden !important; /* 防止水平溢出 */
+  overflow-y: auto !important; /* 允许垂直滚动 */
+}
+
+/* 动画效果 */
+.ant-layout-sider {
+  transition: all 0.2s ease;
+}
+
+.ant-menu-item {
+  transition: all 0.2s ease;
+}
+
+.ant-menu-item:hover {
+  background-color: #e6f7ff;
+}
+
+/* 题目网格容器 */
+.question-grid-container {
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* 加载状态 */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+}
+
+/* 错误状态 */
+.error-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  color: #ff4d4f;
+}
+
+.error-text {
+  margin-bottom: 16px;
+  font-size: 16px;
+}
+
+/* 自定义按钮样式 */
+.action-button {
+  margin: 0 4px;
+}
+
+.primary-button {
+  background: #1890ff;
+  border-color: #1890ff;
+}
+
+.primary-button:hover {
+  background: #40a9ff;
+  border-color: #40a9ff;
+}
+
+.danger-button {
+  background: #ff4d4f;
+  border-color: #ff4d4f;
+}
+
+.danger-button:hover {
+  background: #ff7875;
+  border-color: #ff7875;
+}
+
+/* 工具提示样式 */
+.custom-tooltip {
+  max-width: 300px;
+}
+
+/* 表单样式 */
+.form-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.form-item {
+  margin-bottom: 24px;
+}
+
+/* 卡片样式 */
+.info-card {
+  margin-bottom: 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.info-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: box-shadow 0.3s ease;
+}

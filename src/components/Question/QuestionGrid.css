@@ -1,0 +1,317 @@
+/* 题目网格容器 */
+.question-grid-container {
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* 统计卡片 */
+.stats-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.stats-card .ant-statistic-title {
+  font-size: 12px;
+  color: #666;
+}
+
+.stats-card .ant-statistic-content {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* 操作栏 */
+.action-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.action-left {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.action-right {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* 题目网格 */
+.question-grid {
+  display: grid;
+  gap: 8px;
+  padding: 16px 0;
+}
+
+/* 题目项容器 */
+.question-item-container {
+  position: relative;
+  display: inline-block;
+}
+
+/* 题目项按钮 */
+.question-item {
+  font-weight: bold;
+  font-size: 14px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.question-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.question-item:active {
+  transform: translateY(0);
+}
+
+/* 斩题标记按钮 */
+.mastered-toggle {
+  z-index: 10;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.mastered-toggle:hover {
+  color: #faad14 !important;
+  border-color: #faad14 !important;
+  transform: scale(1.1);
+}
+
+/* 空状态 */
+.empty-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  color: #999;
+  font-size: 16px;
+}
+
+/* 响应式设计 */
+@media (max-width: 1200px) {
+  .question-grid {
+    grid-template-columns: repeat(8, 1fr) !important;
+  }
+}
+
+@media (max-width: 992px) {
+  .action-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .action-left,
+  .action-right {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  
+  .question-grid {
+    grid-template-columns: repeat(6, 1fr) !important;
+  }
+  
+  .stats-card .ant-col {
+    margin-bottom: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .question-grid {
+    grid-template-columns: repeat(5, 1fr) !important;
+    gap: 6px;
+  }
+  
+  .question-item {
+    height: 35px !important;
+    font-size: 12px;
+  }
+  
+  .mastered-toggle {
+    width: 18px !important;
+    height: 18px !important;
+    top: -6px !important;
+    right: -6px !important;
+  }
+  
+  .action-left .ant-btn,
+  .action-right .ant-select {
+    margin-bottom: 8px;
+  }
+}
+
+@media (max-width: 576px) {
+  .question-grid-container {
+    padding: 8px;
+  }
+  
+  .question-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 4px;
+  }
+  
+  .question-item {
+    height: 32px !important;
+    font-size: 11px;
+  }
+  
+  .mastered-toggle {
+    width: 16px !important;
+    height: 16px !important;
+    top: -4px !important;
+    right: -4px !important;
+  }
+  
+  .stats-card .ant-statistic-content {
+    font-size: 16px;
+  }
+  
+  .action-bar {
+    gap: 8px;
+  }
+  
+  .action-left,
+  .action-right {
+    gap: 4px;
+  }
+}
+
+/* 题目状态颜色 */
+.question-new {
+  background-color: #d9d9d9;
+  border-color: #d9d9d9;
+  color: #000;
+}
+
+.question-correct {
+  background-color: #52c41a;
+  border-color: #52c41a;
+  color: white;
+}
+
+.question-wrong-1 {
+  background-color: #ff7875;
+  border-color: #ff7875;
+  color: white;
+}
+
+.question-wrong-2 {
+  background-color: #ff4d4f;
+  border-color: #ff4d4f;
+  color: white;
+}
+
+.question-wrong-3 {
+  background-color: #cf1322;
+  border-color: #cf1322;
+  color: white;
+}
+
+.question-mastered {
+  background-color: #52c41a;
+  border-color: #52c41a;
+  color: white;
+  position: relative;
+}
+
+.question-mastered::after {
+  content: '★';
+  position: absolute;
+  top: -2px;
+  right: 2px;
+  color: #faad14;
+  font-size: 10px;
+}
+
+/* 动画效果 */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.question-item:focus {
+  animation: pulse 0.3s ease-in-out;
+}
+
+/* 工具提示样式 */
+.ant-tooltip-inner {
+  background-color: rgba(0, 0, 0, 0.85);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* 卡片标题样式 */
+.ant-card-head-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #262626;
+}
+
+/* 按钮组样式 */
+.ant-btn-group .ant-btn {
+  margin-right: 0;
+}
+
+.ant-btn-group .ant-btn:not(:last-child) {
+  border-right: 1px solid #d9d9d9;
+}
+
+/* 选择器样式 */
+.ant-select-selector {
+  border-radius: 6px;
+}
+
+.ant-select-focused .ant-select-selector {
+  border-color: #1890ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+/* 加载状态 */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* 滚动条样式 */
+.question-grid-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.question-grid-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.question-grid-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.question-grid-container::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
