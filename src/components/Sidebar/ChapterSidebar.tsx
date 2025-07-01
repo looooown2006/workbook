@@ -123,15 +123,18 @@ const ChapterSidebar: React.FC = () => {
 
   const handleChapterSelect = (chapter: Chapter) => {
     setCurrentChapter(chapter);
-    // loadQuestions 将由 QuestionGrid 的 useEffect 自动调用
+    loadQuestions(chapter.id); // 自动加载题目，保证详情/网格有数据
   };
 
   // 获取章节统计信息
   const getChapterStats = (chapter: Chapter) => {
-    const chapterQuestions = questions.filter(q => 
-      chapter.questionIds.includes(q.id)
-    );
-    return calculateStudyStats(chapterQuestions);
+    return {
+      total: chapter.questionIds.length,
+      correct: 0,
+      wrong: 0,
+      mastered: 0,
+      accuracy: 0
+    };
   };
 
   if (!currentBank) {

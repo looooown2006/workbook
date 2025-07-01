@@ -31,7 +31,6 @@ import EmptyState from '../Common/EmptyState';
 const { Title, Text, Paragraph } = Typography;
 
 const TestMode: React.FC = () => {
-  const navigate = useNavigate();
   const {
     questions,
     currentChapter,
@@ -40,8 +39,10 @@ const TestMode: React.FC = () => {
     updateTestSession,
     completeTestSession,
     currentTestSession,
-    addWrongQuestion
+    addWrongQuestion,
+    setPendingRoute
   } = useAppStore();
+  const navigate = useNavigate();
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Map<string, number>>(new Map());
@@ -54,6 +55,7 @@ const TestMode: React.FC = () => {
   useEffect(() => {
     const filtered = questions.filter(q => !q.isMastered);
     setFilteredQuestions(filtered);
+    setCurrentIndex(0); // 题库/章节/题目变化时重置到第一题
 
     // 初始化测试会话
     if (filtered.length > 0 && currentBank && currentChapter) {
@@ -74,9 +76,9 @@ const TestMode: React.FC = () => {
 
   const currentQuestion = filteredQuestions[currentIndex];
 
+  // 选择答案后只高亮，不自动跳题、不显示答案
   const handleAnswerSelect = useCallback((answerIndex: number) => {
     if (!currentQuestion || showResults) return;
-
     const newAnswers = new Map(answers);
     newAnswers.set(currentQuestion.id, answerIndex);
     setAnswers(newAnswers);
@@ -127,7 +129,9 @@ const TestMode: React.FC = () => {
     }
   };
 
+  // 返回首页选择题库按钮
   const handleBackToHome = () => {
+    setPendingRoute('/test');
     navigate('/');
   };
 
@@ -172,11 +176,6 @@ const TestMode: React.FC = () => {
     };
   };
 
-  // 如果没有选择题库或章节，显示空状态
-  if (!currentBank || !currentChapter) {
-    return <EmptyState mode="test" />;
-  }
-
   // 如果没有题目，显示空状态
   if (filteredQuestions.length === 0) {
     return (
@@ -188,6 +187,22 @@ const TestMode: React.FC = () => {
     );
   }
 
+  if (!currentBank) {
+    return (
+      <div style={{ padding: '24px', textAlign: 'center' }}>
+        <Button type="primary" onClick={handleBackToHome}>
+          返回首页选择题库
+        </Button>
+      </div>
+    );
+  }
+  if (!currentChapter) {
+    return (
+      <div style={{ padding: '24px', textAlign: 'center' }}>
+        <Text type="secondary">请先选择章节</Text>
+      </div>
+    );
+  }
   if (!currentQuestion) {
     return (
       <div style={{ padding: '24px', textAlign: 'center' }}>
@@ -396,19 +411,16 @@ const TestMode: React.FC = () => {
         {/* 选项 */}
         <Radio.Group
           value={answers.get(currentQuestion.id)}
-          onChange={(e) => handleAnswerSelect(e.target.value)}></Radio.Group>
-        <Radio.Group
-          value={answers.get(currentQuestion.id)}
           onChange={(e) => handleAnswerSelect(e.target.value)}
           style={{ width: '100%' }}
         >
           <Space direction="vertical" style={{ width: '100%' }}>
             {currentQuestion.options.map((option, index) => {
-             const isSelected = answers.get(currentQuestion.id) === index;
-             return (
-               <Radio.Button
+              const isSelected = answers.get(currentQuestion.id) === index;
+              return (
+                <Radio.Button
                   key={index}
-                 value={index}
+                  value={index}
                   style={{
                     width: '100%',
                     textAlign: 'left',
@@ -429,7 +441,6 @@ const TestMode: React.FC = () => {
             })}
           </Space>
         </Radio.Group>
-
 
         {/* 导航按钮 */}
         <div style={{ marginTop: '24px', textAlign: 'center' }}>

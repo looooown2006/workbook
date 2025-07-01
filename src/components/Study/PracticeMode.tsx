@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Card, Button, Radio, Space, Typography, Progress, message, Tag, Divider } from 'antd';
 import { ArrowLeftOutlined, ArrowRightOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
@@ -13,7 +13,6 @@ interface PracticeModeProps {
 }
 
 const PracticeMode: React.FC<PracticeModeProps> = ({ questions: propQuestions }) => {
-  const navigate = useNavigate();
   const { 
     currentBank, 
     currentChapter, 
@@ -21,8 +20,12 @@ const PracticeMode: React.FC<PracticeModeProps> = ({ questions: propQuestions })
     submitAnswer,
     addWrongQuestion,
     answerRecords,
-    loadAnswerRecords
+    loadAnswerRecords,
+    loadQuestions,
+    isLoading,
+    setPendingRoute
   } = useAppStore();
+  const navigate = useNavigate();
 
   // 优先使用props传入的questions，否则用store中的questions
   const questions = propQuestions ?? storeQuestions;
@@ -35,6 +38,8 @@ const PracticeMode: React.FC<PracticeModeProps> = ({ questions: propQuestions })
   // 新增：记录每题答题状态
   const [answersMap, setAnswersMap] = useState<{ [id: string]: { selectedAnswer: number, isCorrect: boolean, showAnswer: boolean } }>({});
 
+  const hasLoadedRef = useRef(false);
+
   // 过滤当前章节的题目
   const filteredQuestions = questions.filter(q =>
     currentChapter &&
@@ -42,6 +47,11 @@ const PracticeMode: React.FC<PracticeModeProps> = ({ questions: propQuestions })
   );
 
   const question = filteredQuestions[currentIndex];
+
+  // filteredQuestions 变化时自动重置 currentIndex，防止题目错乱
+  useEffect(() => {
+    setCurrentIndex(0);
+  }, [filteredQuestions.length, currentBank, currentChapter, propQuestions]);
 
   useEffect(() => {
     if (currentBank && currentChapter && filteredQuestions.length > 0) {
@@ -85,56 +95,66 @@ const PracticeMode: React.FC<PracticeModeProps> = ({ questions: propQuestions })
     }
   }, [filteredQuestions, currentIndex]);
 
-  const handleAnswerSelect = useCallback(async (answerIndex: number) => {
+  useEffect(() => {
+    if (
+      currentChapter &&
+      !isLoading &&
+      (!storeQuestions.length || !storeQuestions.some(q => currentChapter.questionIds.includes(q.id))) &&
+      !hasLoadedRef.current
+    ) {
+      hasLoadedRef.current = true;
+      loadQuestions(currentChapter.id).finally(() => {
+        hasLoadedRef.current = false;
+      });
+    }
+  }, [currentChapter, storeQuestions, isLoading, loadQuestions]);
+
+  // 返回首页选择题库按钮
+  const handleBackToHome = () => {
+    setPendingRoute('/practice');
+    navigate('/');
+  };
+
+  // 选择选项后只高亮，不显示答案
+  const handleAnswerSelect = useCallback((answerIndex: number) => {
     if (showAnswer || !question) return;
-
     setSelectedAnswer(answerIndex);
+  }, [showAnswer, question]);
+
+  // 点击确认按钮后才显示答案和解析，并提交答题记录
+  const handleConfirmAnswer = useCallback(async () => {
+    if (showAnswer || !question || selectedAnswer === null) return;
     setShowAnswer(true);
-
-    const correct = answerIndex === question.correctAnswer;
+    const correct = selectedAnswer === question.correctAnswer;
     setIsCorrect(correct);
-
-    // 记录本题答题状态
     setAnswersMap(prev => ({
       ...prev,
       [question.id]: {
-        selectedAnswer: answerIndex,
+        selectedAnswer,
         isCorrect: correct,
         showAnswer: true
       }
     }));
-
-    // 计算答题时间
     const timeSpent = Math.round((new Date().getTime() - startTime.getTime()) / 1000);
-
-    // 提交答案
     try {
-      await submitAnswer(question.id, answerIndex, timeSpent);
-
-      if (correct) {
-        message.success('回答正确！');
-      } else {
-        message.error('回答错误！');
-
-        // 自动添加到错题本
-        if (currentBank && currentChapter) {
-          try {
-            await addWrongQuestion(
-              question.id,
-              currentBank.id,
-              currentChapter.id,
-              answerIndex,
-              '刷题模式错误'
-            );
-          } catch (wrongError) {
-            console.error('添加错题失败:', wrongError);
-          }
+      await submitAnswer(question.id, selectedAnswer, timeSpent);
+      if (!correct && currentBank && currentChapter) {
+        try {
+          await addWrongQuestion(
+            question.id,
+            currentBank.id,
+            currentChapter.id,
+            selectedAnswer,
+            '刷题模式错误'
+          );
+        } catch (wrongError) {
+          console.error('添加错题失败:', wrongError);
         }
       }
     } catch (error) {
       message.error('提交答案失败');
     }
-  }, [showAnswer, question, startTime, submitAnswer, currentBank, currentChapter, addWrongQuestion]);
+  }, [showAnswer, question, selectedAnswer, startTime, submitAnswer, currentBank, currentChapter, addWrongQuestion]);
 
   const handleNext = () => {
     if (currentIndex < filteredQuestions.length - 1) {
@@ -150,11 +170,6 @@ const PracticeMode: React.FC<PracticeModeProps> = ({ questions: propQuestions })
       setCurrentIndex(currentIndex - 1);
     }
   };
-
-  // 如果没有选择题库或章节，显示空状态
-  if (!currentBank || !currentChapter) {
-    return <EmptyState mode="practice" />;
-  }
 
   // 如果没有题目，显示空状态
   if (filteredQuestions.length === 0) {
@@ -172,6 +187,23 @@ const PracticeMode: React.FC<PracticeModeProps> = ({ questions: propQuestions })
     return (
       <div style={{ padding: '24px', textAlign: 'center' }}>
         <Text>加载中...</Text>
+      </div>
+    );
+  }
+
+  if (!currentBank) {
+    return (
+      <div style={{ padding: '24px', textAlign: 'center' }}>
+        <Button type="primary" onClick={handleBackToHome}>
+          返回首页选择题库
+        </Button>
+      </div>
+    );
+  }
+  if (!currentChapter) {
+    return (
+      <div style={{ padding: '24px', textAlign: 'center' }}>
+        <Text type="secondary">请先选择章节</Text>
       </div>
     );
   }
@@ -229,12 +261,12 @@ const PracticeMode: React.FC<PracticeModeProps> = ({ questions: propQuestions })
                   border: showAnswer ? (
                     index === question.correctAnswer ? '2px solid #52c41a' :
                     index === selectedAnswer ? '2px solid #ff4d4f' : '1px solid #d9d9d9'
-                  ) : '1px solid #d9d9d9',
+                  ) : (selectedAnswer === index ? '2px solid #1890ff' : '1px solid #d9d9d9'),
                   borderRadius: '6px',
                   backgroundColor: showAnswer ? (
                     index === question.correctAnswer ? '#f6ffed' :
                     index === selectedAnswer && index !== question.correctAnswer ? '#fff2f0' : 'white'
-                  ) : 'white'
+                  ) : (selectedAnswer === index ? '#e6f7ff' : 'white')
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -276,22 +308,33 @@ const PracticeMode: React.FC<PracticeModeProps> = ({ questions: propQuestions })
             >
               上一题
             </Button>
-            
-            <Button
-              type="primary"
-              icon={<ArrowRightOutlined />}
-              onClick={handleNext}
-              disabled={!showAnswer}
-            >
-              {currentIndex === filteredQuestions.length - 1 ? '完成' : '下一题'}
-            </Button>
+            {/* 确认按钮：只在未显示答案且已选中选项时可用 */}
+            {!showAnswer && (
+              <Button
+                type="primary"
+                onClick={handleConfirmAnswer}
+                disabled={selectedAnswer === null}
+              >
+                确认
+              </Button>
+            )}
+            {/* 下一题按钮：只在已显示答案时可用 */}
+            {showAnswer && (
+              <Button
+                type="primary"
+                icon={<ArrowRightOutlined />}
+                onClick={handleNext}
+              >
+                {currentIndex === filteredQuestions.length - 1 ? '完成' : '下一题'}
+              </Button>
+            )}
           </Space>
         </div>
 
         {/* 提示信息 */}
         {!showAnswer && (
           <div style={{ textAlign: 'center', marginTop: '16px' }}>
-            <Text type="secondary">请选择答案查看解析</Text>
+            <Text type="secondary">请选择答案后点击"确认"查看解析</Text>
           </div>
         )}
       </Card>

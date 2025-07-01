@@ -37,12 +37,10 @@ const QuestionGrid: React.FC = () => {
   // 当章节变化时加载题目
   useEffect(() => {
     if (currentChapter?.id) {
-      console.log('Loading questions for chapter:', currentChapter.name);
       setQuestionsLoading(true);
       loadQuestions(currentChapter.id)
-        .then(() => {
-          // 使用全局questions状态
-          setLocalQuestions(questions);
+        .then((qs) => {
+          setLocalQuestions(qs);
         })
         .finally(() => setQuestionsLoading(false));
     } else {
