@@ -17,14 +17,6 @@ const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const { setStudyMode, pendingRoute, setPendingRoute, currentBank } = useAppStore();
 
-  // 题库选择后自动跳转到 pendingRoute
-  useEffect(() => {
-    if (pendingRoute && currentBank) {
-      navigate(pendingRoute);
-      setPendingRoute(undefined);
-    }
-  }, [pendingRoute, currentBank, navigate, setPendingRoute]);
-
   return (
     <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
       <Title level={2}>欢迎使用刷题软件</Title>

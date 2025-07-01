@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Typography, Button, Space, Card, List, Tag, Spin } from 'antd';
+import { Typography, Button, Space, Card, List, Tag, Spin, Dropdown, Menu } from 'antd';
 import { RobotOutlined, PlusOutlined, ImportOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useAppStore } from '../../stores/useAppStore';
 import { Question } from '../../types';
 import SmartImportAssistant from '../Import/SmartImportAssistant';
 import QuestionImport from '../Import/QuestionImport';
+import { useNavigate } from 'react-router-dom';
 import './QuestionGrid.css';
 
 const { Text } = Typography;
@@ -22,6 +23,9 @@ const QuestionGrid: React.FC = () => {
   const [importVisible, setImportVisible] = useState(false);
   const [questionsLoading, setQuestionsLoading] = useState(false);
   const [localQuestions, setLocalQuestions] = useState<Question[]>([]);
+
+  const navigate = useNavigate();
+  const { pendingRoute, setPendingRoute } = useAppStore();
 
   // 调试信息
   console.log('QuestionGrid render:', {
@@ -77,6 +81,22 @@ const QuestionGrid: React.FC = () => {
   if (localQuestions && localQuestions.length > 0) {
     return (
       <>
+        <div style={{ padding: '16px', paddingBottom: 0 }}>
+          <Dropdown
+            overlay={
+              <Menu>
+                <Menu.Item key="practice" onClick={() => navigate('/practice')}>刷题模式</Menu.Item>
+                <Menu.Item key="test" onClick={() => navigate('/test')}>测试模式</Menu.Item>
+                <Menu.Item key="quick-study" onClick={() => navigate('/quick-study')}>快刷模式</Menu.Item>
+              </Menu>
+            }
+            placement="bottomLeft"
+          >
+            <Button type="primary" style={{ marginBottom: 16 }}>
+              开始做题
+            </Button>
+          </Dropdown>
+        </div>
         <div style={{ padding: '16px' }}>
           <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
