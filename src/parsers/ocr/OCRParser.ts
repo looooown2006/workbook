@@ -158,7 +158,7 @@ export class OCRParser implements IQuestionParser {
    * 检查是否支持输入类型
    */
   supports(input: ParseInput): boolean {
-    return this.supportedTypes.includes(input.type) && input.content instanceof File;
+    return this.supportedTypes.includes(input.type as any) && input.content instanceof File;
   }
 
   /**
@@ -207,7 +207,7 @@ export class OCRParser implements IQuestionParser {
         textLength: text.length
       };
 
-      const aiResult = await AIParser.parseWithAI(text, context);
+      const aiResult = await AIParser.parseWithAI(text, 'temp-chapter-id', context);
 
       return {
         success: aiResult.success,
@@ -252,7 +252,7 @@ export class OCRParser implements IQuestionParser {
         confidence: 0.8 // OCR文本的基础置信度
       };
 
-      const result = await AIParser.parseWithAI(cleanedText, context);
+      const result = await AIParser.parseWithAI(cleanedText, 'temp-chapter-id', context);
       return result.questions;
     } catch (error) {
       console.error('AI解析失败，尝试简单解析:', error);

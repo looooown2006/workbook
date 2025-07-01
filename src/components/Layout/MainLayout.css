@@ -1,13 +1,11 @@
-/* 主布局样式 */
-/* 全局背景修复 */
+/* 主布局样式 - 现代化设计 */
+@import '../../styles/design-system.css';
+
+/* 布局特定的全局覆盖 */
 html, body, #root {
-  background: white !important;
-  height: 100vh !important; /* 使用视口高度 */
-  width: 100vw !important; /* 使用视口宽度 */
-  margin: 0 !important;
-  padding: 0 !important;
-  overflow-x: hidden !important; /* 防止水平滚动 */
-  overflow-y: auto !important; /* 允许垂直滚动 */
+  background: var(--bg-secondary) !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
 }
 
 .main-header {
@@ -15,26 +13,246 @@ html, body, #root {
   top: 0;
   left: 0;
   right: 0;
-  width: 100vw !important; /* 确保填满整个视口宽度 */
-  z-index: 1000;
+  width: 100vw !important;
+  z-index: var(--z-fixed);
   padding: 0;
   height: 64px;
   line-height: 64px;
-  background: #001529;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-backdrop);
+  -webkit-backdrop-filter: var(--glass-backdrop);
+  box-shadow: var(--shadow-glass);
+  border-bottom: 1px solid var(--glass-border);
 }
 
 /* Electron环境下的样式调整 */
 .electron-layout .main-header {
-  top: 32px; /* 为自定义标题栏留出空间 */
+  top: 32px;
 }
 
 .electron-app {
-  overflow: hidden; /* 防止滚动条 */
+  overflow: hidden;
 }
 
 .electron-app .ant-layout {
-  min-height: calc(100vh - 32px); /* 减去标题栏高度 */
+  min-height: calc(100vh - 32px);
+}
+
+/* 现代化导航栏样式 */
+.main-header .header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+  padding: 0 var(--space-lg);
+}
+
+.header-logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  color: var(--text-inverse);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  text-decoration: none;
+}
+
+.header-logo:hover {
+  color: var(--text-inverse);
+  opacity: 0.9;
+}
+
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.header-nav-item {
+  color: var(--text-inverse);
+  text-decoration: none;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-normal);
+  font-weight: var(--font-weight-medium);
+  position: relative;
+  overflow: hidden;
+}
+
+.header-nav-item:hover {
+  color: var(--text-inverse);
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
+}
+
+.header-nav-item.active {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.header-nav-item::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: var(--text-inverse);
+  transition: all var(--transition-normal);
+  transform: translateX(-50%);
+}
+
+.header-nav-item.active::before,
+.header-nav-item:hover::before {
+  width: 80%;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.fullscreen-btn {
+  color: var(--text-inverse);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm);
+  transition: all var(--transition-normal);
+  cursor: pointer;
+}
+
+.fullscreen-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: scale(1.05);
+}
+
+/* 现代化侧边栏样式 */
+.main-sidebar {
+  background: var(--bg-card);
+  border-right: 1px solid var(--border-light);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+}
+
+.main-sidebar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--primary-gradient);
+}
+
+.sidebar-menu {
+  padding: var(--space-md);
+}
+
+.sidebar-menu .ant-menu {
+  background: transparent;
+  border: none;
+}
+
+.sidebar-menu .ant-menu-item {
+  margin: var(--space-xs) 0;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-normal);
+  font-weight: var(--font-weight-medium);
+  position: relative;
+  overflow: hidden;
+}
+
+.sidebar-menu .ant-menu-item:hover {
+  background: var(--primary-color-light);
+  color: var(--primary-color);
+  transform: translateX(4px);
+}
+
+.sidebar-menu .ant-menu-item.ant-menu-item-selected {
+  background: var(--primary-gradient);
+  color: var(--text-inverse);
+  box-shadow: var(--shadow-colored);
+}
+
+.sidebar-menu .ant-menu-item.ant-menu-item-selected::after {
+  display: none;
+}
+
+.sidebar-menu .ant-menu-item-icon {
+  font-size: var(--font-size-lg);
+  margin-right: var(--space-sm);
+}
+
+/* 内容区域现代化样式 */
+.main-content {
+  background: var(--bg-primary);
+  padding: var(--space-xl);
+  min-height: calc(100vh - 64px);
+  position: relative;
+  margin-left: 320px; /* 为固定题库侧边栏留出空间 */
+  transition: all var(--transition-normal);
+}
+
+.page-content {
+  background: var(--bg-primary);
+  padding: var(--space-xl);
+  min-height: calc(100vh - 64px);
+  animation: fadeInUp var(--transition-normal);
+  margin-left: 0; /* 其他页面不需要侧边栏空间 */
+}
+
+.bank-sidebar,
+.chapter-sidebar {
+  background: var(--bg-card);
+  border-right: 1px solid var(--border-light);
+  box-shadow: var(--shadow-md);
+  position: relative;
+}
+
+.bank-sidebar::before,
+.chapter-sidebar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--secondary-gradient);
+}
+
+/* 空状态样式 */
+.empty-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  min-height: 400px;
+  text-align: center;
+  padding: var(--space-2xl);
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  margin: var(--space-lg);
+}
+
+.empty-text {
+  font-size: var(--font-size-xl);
+  color: var(--text-secondary);
+  font-weight: var(--font-weight-medium);
+  margin-top: var(--space-lg);
+}
+
+.empty-content::before {
+  content: '📚';
+  font-size: 4rem;
+  opacity: 0.5;
+  animation: float 3s ease-in-out infinite;
 }
 
 .header-content {
@@ -75,70 +293,11 @@ html, body, #root {
   color: white;
 }
 
-/* 侧边栏样式 */
-.function-sidebar {
-  position: fixed; /* 固定定位，不随页面滚动 */
-  top: 64px; /* 位于顶部导航栏下方 */
-  left: 0; /* 贴左边 */
-  width: 240px; /* 固定宽度 */
-  height: calc(100vh - 64px);
-  overflow: hidden; /* 隐藏滚动条，因为菜单项不会超出容器 */
-  background: linear-gradient(180deg, #001529 0%, #002140 100%) !important; /* 渐变背景 */
-  border-right: 1px solid #1890ff20;
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15); /* 添加阴影 */
-  z-index: 100;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* 更流畅的过渡动画 */
-}
 
-/* 折叠状态下的样式 */
-.function-sidebar.ant-layout-sider-collapsed {
-  width: 64px !important; /* 折叠后的宽度，增加一些空间 */
-}
-
-/* 折叠状态下的菜单项样式 */
-.function-sidebar.ant-layout-sider-collapsed .function-menu .ant-menu-item {
-  margin: 6px 8px !important; /* 折叠时的边距 */
-  padding: 16px 8px !important; /* 折叠时的内边距 */
-  text-align: center !important; /* 图标居中 */
-  justify-content: center !important; /* 内容居中 */
-  border-radius: 12px !important; /* 更大的圆角 */
-  transform: none !important; /* 重置变换 */
-}
-
-.function-sidebar.ant-layout-sider-collapsed .function-menu .ant-menu-item:hover {
-  transform: scale(1.05) !important; /* 折叠时悬停缩放 */
-}
-
-.function-sidebar.ant-layout-sider-collapsed .function-menu .ant-menu-item-selected {
-  transform: scale(1.1) !important; /* 折叠时选中缩放 */
-}
-
-.function-sidebar.ant-layout-sider-collapsed .function-menu .ant-menu-item-icon {
-  margin-right: 0 !important; /* 折叠时移除图标右边距 */
-  font-size: 22px !important; /* 折叠时增大图标 */
-}
-
-/* 折叠状态下的触发器样式 */
-.function-sidebar .ant-layout-sider-trigger {
-  background: linear-gradient(135deg, #1890ff 0%, #40a9ff 100%) !important; /* 渐变背景 */
-  color: white !important;
-  border-top: 1px solid rgba(24, 144, 255, 0.3);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  height: 56px !important; /* 增加触发器高度 */
-  line-height: 56px !important; /* 垂直居中 */
-  font-size: 18px !important; /* 增大图标 */
-  box-shadow: 0 -2px 8px rgba(24, 144, 255, 0.2); /* 上方阴影 */
-}
-
-.function-sidebar .ant-layout-sider-trigger:hover {
-  background: linear-gradient(135deg, #40a9ff 0%, #1890ff 100%) !important; /* 悬停渐变 */
-  transform: translateY(-2px) !important; /* 悬停上移 */
-  box-shadow: 0 -4px 16px rgba(24, 144, 255, 0.3) !important; /* 悬停阴影 */
-}
 
 .bank-sidebar {
   margin-top: 64px;
-  margin-left: 240px; /* 为固定的左侧导航栏留出空间 */
+  margin-left: 280px; /* 为固定的题库侧边栏留出空间 */
   height: calc(100vh - 64px);
   overflow-y: auto;
   background: #f0f2f5;
@@ -150,7 +309,7 @@ html, body, #root {
 
 .chapter-sidebar {
   margin-top: 64px;
-  margin-left: 240px; /* 为固定的左侧导航栏留出空间 */
+  margin-left: 280px; /* 为固定的题库侧边栏留出空间 */
   height: calc(100vh - 64px);
   overflow-y: auto;
   background: white;
@@ -160,102 +319,11 @@ html, body, #root {
   transition: margin-left 0.2s ease; /* 添加过渡动画 */
 }
 
-/* 功能菜单样式 */
-.function-menu-container {
-  padding: 16px 8px; /* 增加内边距 */
-}
 
-.function-menu {
-  background: transparent !important; /* 透明背景，显示渐变 */
-  border-right: none;
-}
 
-/* 菜单项样式美化 */
-.function-menu .ant-menu-item {
-  margin: 4px 8px !important; /* 增加外边距 */
-  padding: 12px 16px !important; /* 增加内边距 */
-  border-radius: 8px !important; /* 圆角 */
-  height: auto !important; /* 自动高度 */
-  line-height: 1.4 !important; /* 行高 */
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important; /* 流畅过渡 */
-  color: rgba(255, 255, 255, 0.85) !important; /* 半透明白色 */
-  font-weight: 500 !important; /* 字体加粗 */
-}
 
-.function-menu .ant-menu-item:hover {
-  background: rgba(24, 144, 255, 0.15) !important; /* 悬停背景 */
-  color: #ffffff !important; /* 悬停文字颜色 */
-  transform: translateX(4px) !important; /* 悬停时轻微右移 */
-  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.2) !important; /* 悬停阴影 */
-}
 
-.function-menu .ant-menu-item-selected {
-  background: linear-gradient(135deg, #1890ff 0%, #40a9ff 100%) !important; /* 选中状态渐变背景 */
-  color: #ffffff !important; /* 选中文字颜色 */
-  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3) !important; /* 选中阴影 */
-  transform: translateX(6px) !important; /* 选中时右移 */
-}
 
-.function-menu .ant-menu-item-selected::after {
-  display: none !important; /* 隐藏默认的选中指示器 */
-}
-
-/* 菜单图标样式 */
-.function-menu .ant-menu-item-icon {
-  font-size: 18px !important; /* 图标大小 */
-  margin-right: 12px !important; /* 图标右边距 */
-  transition: all 0.3s ease !important; /* 图标过渡 */
-}
-
-.function-menu .ant-menu-item:hover .ant-menu-item-icon {
-  transform: scale(1.1) !important; /* 悬停时图标放大 */
-}
-
-.function-menu .ant-menu-item-selected .ant-menu-item-icon {
-  transform: scale(1.15) !important; /* 选中时图标放大 */
-}
-
-.function-menu .ant-menu-item {
-  color: rgba(255, 255, 255, 0.95) !important; /* 增加文字不透明度 */
-  background-color: rgba(255, 255, 255, 0.1) !important; /* 增加背景不透明度 */
-  margin: 3px 12px; /* 调整外边距：减少垂直间距，增加水平间距 */
-  padding: 8px 16px; /* 调整内边距：减少垂直内边距 */
-  height: 40px; /* 设置固定高度 */
-  line-height: 24px; /* 调整行高 */
-  border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.2); /* 增加边框不透明度 */
-  display: flex;
-  align-items: center; /* 垂直居中对齐 */
-}
-
-.function-menu .ant-menu-item:hover {
-  background-color: rgba(255, 255, 255, 0.25) !important; /* 增加悬停背景不透明度 */
-  color: white !important;
-  border-color: rgba(255, 255, 255, 0.4); /* 增加悬停边框不透明度 */
-}
-
-.function-menu .ant-menu-item-selected {
-  background-color: #1890ff !important;
-  color: white !important;
-  border-color: #1890ff;
-  box-shadow: 0 2px 4px rgba(24, 144, 255, 0.3); /* 添加阴影增强可见性 */
-}
-
-.function-menu .ant-menu-item-icon {
-  font-size: 18px; /* 增加图标大小 */
-  color: inherit !important;
-  margin-right: 8px; /* 图标与文字间距 */
-  min-width: 18px; /* 确保图标有固定宽度 */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.function-menu .ant-menu-item .ant-menu-title-content {
-  color: inherit !important;
-  font-size: 14px; /* 设置文字大小 */
-  font-weight: 500; /* 稍微加粗文字 */
-}
 
 /* 主内容区域 */
 .main-content {
@@ -278,26 +346,7 @@ html, body, #root {
   width: calc(100% - 240px) !important;
 }
 
-/* 导航栏折叠时的样式 - 通过JavaScript动态添加类名 */
-.sidebar-collapsed .main-content {
-  margin-left: 64px !important; /* 折叠后的左边距，匹配新的折叠宽度 */
-  width: calc(100% - 64px) !important; /* 折叠后的宽度 */
-}
 
-.sidebar-collapsed .page-content {
-  margin-left: 64px !important; /* 折叠后的左边距，匹配新的折叠宽度 */
-  width: calc(100% - 64px) !important; /* 折叠后的宽度 */
-}
-
-.sidebar-collapsed .bank-sidebar {
-  margin-left: 64px !important; /* 折叠后的左边距 */
-  width: 280px !important; /* 保持固定宽度 */
-}
-
-.sidebar-collapsed .chapter-sidebar {
-  margin-left: 64px !important; /* 折叠后的左边距 */
-  width: 280px !important; /* 保持固定宽度 */
-}
 
 .page-content {
   margin-top: 64px;

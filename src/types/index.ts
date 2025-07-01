@@ -7,6 +7,9 @@ export type QuestionStatus = 'new' | 'correct' | 'wrong' | 'mastered';
 // 刷题模式
 export type StudyMode = 'quick' | 'study' | 'practice' | 'test' | 'wrong-review';
 
+// 题目类型
+export type QuestionType = 'single_choice' | 'multiple_choice' | 'true_false' | 'fill_blank' | 'essay';
+
 // 题目接口
 export interface Question {
   id: string;
@@ -15,7 +18,9 @@ export interface Question {
   correctAnswer: number; // 正确答案的索引 (0-based)
   explanation?: string;
   difficulty?: DifficultyLevel;
+  type?: QuestionType;
   tags?: string[];
+  chapterId: string; // 所属章节ID
   status: QuestionStatus;
   wrongCount: number; // 错误次数
   lastAnswered?: Date;
@@ -88,11 +93,12 @@ export interface Statistics {
 
 // 导入题目的原始数据格式
 export interface ImportQuestionData {
-  title: string;
+  title: string; // 题目内容 - 保持与Question接口一致
   options: string[];
   correctAnswer: number | string; // 可能是数字或字母(A,B,C,D)
   explanation?: string;
-  difficulty?: string;
+  difficulty?: DifficultyLevel;
+  type?: QuestionType;
   tags?: string[];
 }
 

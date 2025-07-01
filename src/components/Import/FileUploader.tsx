@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Upload, Button, message, Progress, Typography, Space, Alert } from 'antd';
-import { UploadOutlined, FileImageOutlined, FilePdfOutlined, DeleteOutlined } from '@ant-design/icons';
+import { UploadOutlined, FileImageOutlined, FilePdfOutlined, FileWordOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { UploadFile, UploadProps } from 'antd';
+import { FileValidator, FileValidationResult } from '../../utils/fileValidator';
+import FileValidationDialog from '../Common/FileValidationDialog';
 
 const { Text } = Typography;
 
@@ -19,28 +21,32 @@ const FileUploader: React.FC<FileUploaderProps> = ({
   onFileRemove,
   loading = false,
   progress = 0,
-  accept = '.jpg,.jpeg,.png,.webp,.pdf',
+  accept = '.jpg,.jpeg,.png,.webp,.pdf,.doc,.docx',
   maxSize = 50
 }) => {
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [dragOver, setDragOver] = useState(false);
+  const [validationDialogVisible, setValidationDialogVisible] = useState(false);
+  const [validationResult, setValidationResult] = useState<FileValidationResult | null>(null);
 
   const beforeUpload = (file: File) => {
-    // 检查文件类型
-    const isValidType = accept.split(',').some(type => 
-      file.type.includes(type.replace('.', '')) || file.name.toLowerCase().endsWith(type)
-    );
-    
-    if (!isValidType) {
-      message.error(`不支持的文件格式，请选择: ${accept}`);
-      return false;
-    }
+    // 使用增强的文件验证器
+    const result = FileValidator.validateFile(file, {
+      maxSize,
+      allowedExtensions: accept.split(',').map(type => type.trim()),
+      strictMode: true
+    });
 
-    // 检查文件大小
-    const isValidSize = file.size / 1024 / 1024 < maxSize;
-    if (!isValidSize) {
-      message.error(`文件大小不能超过 ${maxSize}MB`);
+    // 如果验证失败或有警告，显示详细对话框
+    if (!result.isValid) {
+      setValidationResult(result);
+      setValidationDialogVisible(true);
+      // 阻止上传
       return false;
+    } else if (result.warnings.length > 0) {
+      setValidationResult(result);
+      setValidationDialogVisible(true);
+      // 允许上传，但提示警告
     }
 
     // 更新文件列表
@@ -78,6 +84,9 @@ const FileUploader: React.FC<FileUploaderProps> = ({
     switch (ext) {
       case 'pdf':
         return <FilePdfOutlined style={{ color: '#ff4d4f' }} />;
+      case 'doc':
+      case 'docx':
+        return <FileWordOutlined style={{ color: '#1890ff' }} />;
       case 'jpg':
       case 'jpeg':
       case 'png':
@@ -108,7 +117,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({
           </p>
           <p className="ant-upload-hint">
             <Text type="secondary">
-              支持格式：图片 (JPG, PNG, WebP) 和 PDF 文件
+              支持格式：图片 (JPG, PNG, WebP)、PDF 文件、Word 文档 (DOC, DOCX)
               <br />
               文件大小限制：{maxSize}MB
             </Text>
@@ -158,6 +167,17 @@ const FileUploader: React.FC<FileUploaderProps> = ({
         type="info"
         showIcon
         style={{ marginTop: '16px' }}
+      />
+
+      {/* 文件验证对话框 */}
+      <FileValidationDialog
+        visible={validationDialogVisible}
+        onClose={() => setValidationDialogVisible(false)}
+        validationResult={validationResult}
+        onRetry={() => {
+          setValidationDialogVisible(false);
+          setValidationResult(null);
+        }}
       />
     </div>
   );

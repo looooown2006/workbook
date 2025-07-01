@@ -302,7 +302,7 @@ export class RuleBasedParser implements IQuestionParser {
           const questionData = rule.extractor(match, text);
           
           if (questionData && questionData.title && questionData.options) {
-            const question: ImportQuestionData = {
+            const questionItem: ImportQuestionData = {
               title: questionData.title,
               options: questionData.options,
               correctAnswer: questionData.correctAnswer || 0,
@@ -312,8 +312,8 @@ export class RuleBasedParser implements IQuestionParser {
             };
 
             // 基本验证
-            if (ResultValidator.validateSingle(question)) {
-              questions.push(question);
+            if (ResultValidator.validateSingle(questionItem)) {
+              questions.push(questionItem);
               processedRanges.push([matchStart, matchEnd]);
             }
           }

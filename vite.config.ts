@@ -8,12 +8,34 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
+    chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom'],
-          antd: ['antd'],
-          router: ['react-router-dom']
+        manualChunks: (id) => {
+          // React相关
+          if (id.includes('react') || id.includes('react-dom')) {
+            return 'react-vendor';
+          }
+          // Antd相关
+          if (id.includes('antd') || id.includes('@ant-design')) {
+            return 'antd-vendor';
+          }
+          // 路由相关
+          if (id.includes('react-router')) {
+            return 'router-vendor';
+          }
+          // 解析器相关（较大的功能模块）
+          if (id.includes('src/parsers') || id.includes('src/utils/aiParser')) {
+            return 'parsers';
+          }
+          // 导入相关组件
+          if (id.includes('src/components/Import')) {
+            return 'import-components';
+          }
+          // 其他第三方库
+          if (id.includes('node_modules')) {
+            return 'vendor';
+          }
         }
       }
     }

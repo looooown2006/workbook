@@ -42,6 +42,14 @@ export class PDFExtractor implements IQuestionParser {
     this.ocrParser = new OCRParser();
   }
 
+  getConfig(): PDFExtractorConfig {
+    return this.config;
+  }
+
+  setConfig(config: Partial<PDFExtractorConfig>): void {
+    this.config = { ...this.config, ...config };
+  }
+
   /**
    * 解析PDF文件
    */
@@ -282,7 +290,8 @@ D. form, input, button
           parser: this.name,
           method: 'OCR',
           processedPages,
-          totalPages: images.length
+          totalPages: images.length,
+          processingTime: 0
         }
       };
 
@@ -350,7 +359,7 @@ D. form, input, button
         confidence: 0.9 // PDF文本提取的置信度较高
       };
 
-      const result = await AIParser.parseWithAI(text, context);
+      const result = await AIParser.parseWithAI(text, 'temp-chapter-id', context);
       return result.questions;
     } catch (error) {
       console.error('AI解析失败，尝试简单解析:', error);

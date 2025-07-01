@@ -8,7 +8,7 @@ export interface PerformanceMetric {
   timestamp: number;
   parser: string;
   strategy: string;
-  inputType: 'text' | 'image' | 'pdf';
+  inputType: 'text' | 'image' | 'pdf' | 'file';
   inputSize: number;
   processingTime: number;
   success: boolean;

@@ -194,69 +194,70 @@ const QuestionGrid: React.FC = () => {
     );
   }
 
-  // 显示暂无题目和导入选项
+  // 现代化空状态显示
   return (
     <>
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100%',
-        minHeight: '400px',
-        width: '100%',
-        textAlign: 'center',
-        padding: '50px',
-        boxSizing: 'border-box'
-      }}>
-        <div style={{ fontSize: '48px', color: '#d9d9d9', marginBottom: '16px' }}>
-          📝
+      <div className="empty-state-container">
+        <div className="empty-state-content">
+          <div className="empty-icon">
+            <div className="floating-icon">📚</div>
+            <div className="icon-shadow"></div>
+          </div>
+
+          <div className="empty-text-content">
+            <Text className="empty-title">该章节暂无题目</Text>
+            <Text className="empty-subtitle">
+              开始您的学习之旅，导入题目或创建新题目
+            </Text>
+          </div>
+
+          {/* 现代化导入选项卡片 */}
+          <div className="import-options-grid">
+            <Card className="import-option-card smart-import" hoverable>
+              <div className="import-card-content">
+                <div className="import-icon">
+                  <RobotOutlined />
+                </div>
+                <div className="import-info">
+                  <Text strong className="import-title">AI智能导入</Text>
+                  <Text className="import-description">
+                    支持多种格式自动识别，智能转换题目
+                  </Text>
+                </div>
+                <Button
+                  type="primary"
+                  className="btn-gradient"
+                  onClick={() => setSmartImportVisible(true)}
+                  block
+                  size="large"
+                >
+                  开始导入
+                </Button>
+              </div>
+            </Card>
+
+            <Card className="import-option-card file-import" hoverable>
+              <div className="import-card-content">
+                <div className="import-icon">
+                  <ImportOutlined />
+                </div>
+                <div className="import-info">
+                  <Text strong className="import-title">文件导入</Text>
+                  <Text className="import-description">
+                    支持Word、文本文件等多种格式
+                  </Text>
+                </div>
+                <Button
+                  onClick={() => setImportVisible(true)}
+                  block
+                  size="large"
+                >
+                  选择文件
+                </Button>
+              </div>
+            </Card>
+          </div>
         </div>
-        <Text type="secondary" style={{ fontSize: '16px', marginBottom: '16px' }}>
-          该章节暂无题目
-        </Text>
-        <Text type="secondary" style={{ fontSize: '14px', marginBottom: '32px' }}>
-          请先添加题目或导入题目文件
-        </Text>
-
-        {/* 导入选项 */}
-        <Card
-          style={{
-            marginTop: '32px',
-            maxWidth: '400px',
-            width: '100%',
-            margin: '32px auto 0',
-            textAlign: 'left',
-            flexShrink: 0
-          }}
-          title="快速开始"
-        >
-          <Space direction="vertical" style={{ width: '100%' }}>
-            <Button
-              type="primary"
-              icon={<RobotOutlined />}
-              onClick={() => setSmartImportVisible(true)}
-              block
-              size="large"
-            >
-              智能导入助手
-            </Button>
-            <Text type="secondary" style={{ fontSize: '12px', textAlign: 'center', display: 'block' }}>
-              支持多种格式自动识别，智能转换题目
-            </Text>
-
-            <Button
-              icon={<ImportOutlined />}
-              onClick={() => setImportVisible(true)}
-              block
-            >
-              传统文件导入
-            </Button>
-            <Text type="secondary" style={{ fontSize: '12px', textAlign: 'center', display: 'block' }}>
-              支持Word、文本文件导入
-            </Text>
-          </Space>
-        </Card>
       </div>
 
       {/* 智能导入助手 */}

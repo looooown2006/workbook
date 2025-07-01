@@ -32,6 +32,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '../../stores/useAppStore';
 import { Question, WrongQuestion } from '../../types';
 import { formatDuration, formatDate } from '../../utils/helpers';
+import { handleError } from '../../utils/errorHandler';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -176,6 +177,8 @@ const WrongQuestionReviewMode: React.FC = () => {
       await completeWrongQuestionSession();
       setShowResults(true);
     } catch (error) {
+      handleError(error, '操作失败');
+
       message.error('完成复习失败');
     }
   };
@@ -196,6 +199,8 @@ const WrongQuestionReviewMode: React.FC = () => {
         }, 500);
       }
     } catch (error) {
+      handleError(error, '操作失败');
+
       message.error('操作失败');
     }
   };

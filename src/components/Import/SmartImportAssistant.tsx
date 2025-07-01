@@ -9,11 +9,9 @@ import {
   Typography,
   Space,
   Alert,
-  Divider,
   Form,
   Select,
   message,
-  Spin,
   Row,
   Col,
   Tag,
@@ -25,22 +23,26 @@ import {
   CheckOutlined,
   DeleteOutlined,
   PlusOutlined,
-  BulbOutlined,
   FileTextOutlined,
-  FileImageOutlined,
-  ScanOutlined
+  ScanOutlined,
+  ToolOutlined
 } from '@ant-design/icons';
 import { SmartTextParser } from '../../utils/smartTextParser';
 import { AIParser } from '../../utils/aiParser';
 import { AIConfigManager } from '../../utils/aiConfig';
+import { AIDiagnostics } from '../../utils/aiDiagnostics';
 import { ImportQuestionData, ImportResult, Question } from '../../types';
 import { useAppStore } from '../../stores/useAppStore';
 import { OCRParser } from '../../parsers/ocr/OCRParser';
+import { ParserRouter } from '../../parsers/router/ParserRouter';
 import FileUploader from './FileUploader';
+import { handleError } from '../../utils/errorHandler';
+import { convertImportDataArrayToQuestions } from '../../utils/questionConverter';
+import ParseProgressBar, { ParseProgressManager } from '../Common/ParseProgressBar';
+import { TextSplitter } from '../../utils/textSplitter';
 
 const { TextArea } = Input;
 const { Title, Text, Paragraph } = Typography;
-const { Step } = Steps;
 
 interface SmartImportAssistantProps {
   visible: boolean;
@@ -70,9 +72,15 @@ const SmartImportAssistant: React.FC<SmartImportAssistantProps> = ({
   const [parseMode, setParseMode] = useState<'local' | 'ai' | 'ocr'>('local');
   const [aiConfig, setAiConfig] = useState(AIConfigManager.getConfig());
   const [estimatedCost, setEstimatedCost] = useState(0);
+  const [diagnosing, setDiagnosing] = useState(false);
   const [inputMode, setInputMode] = useState<'text' | 'file'>('text');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [ocrProgress, setOcrProgress] = useState(0);
+
+  // 进度管理器相关状态
+  const [progressManager] = useState(() => new ParseProgressManager());
+  const [showProgress, setShowProgress] = useState(false);
+  const [currentProgress, setCurrentProgress] = useState(progressManager.getCurrentProgress());
 
   // 监听组件显示状态，重新获取AI配置并设置当前章节
   useEffect(() => {
@@ -90,6 +98,19 @@ const SmartImportAssistant: React.FC<SmartImportAssistantProps> = ({
     }
   }, [visible, chapterId, chapters, currentChapter, setCurrentChapter]);
 
+  // 设置进度监听器
+  useEffect(() => {
+    const handleProgressUpdate = (progress: any) => {
+      setCurrentProgress(progress);
+    };
+
+    progressManager.addListener(handleProgressUpdate);
+
+    return () => {
+      progressManager.removeListener(handleProgressUpdate);
+    };
+  }, [progressManager]);
+
   // 重置状态
   const resetState = () => {
     setCurrentStep(0);
@@ -101,6 +122,24 @@ const SmartImportAssistant: React.FC<SmartImportAssistantProps> = ({
     setImporting(false);
     setSelectedFile(null);
     setOcrProgress(0);
+  };
+
+  // AI诊断功能
+  const handleAIDiagnostics = async () => {
+    setDiagnosing(true);
+    try {
+      const result = await AIDiagnostics.runDiagnostics();
+      AIDiagnostics.showDiagnosticResults(result);
+
+      // 如果有问题，尝试快速修复
+      if (!result.success) {
+        await AIDiagnostics.quickFix();
+      }
+    } catch (error) {
+      message.error(`诊断失败: ${error}`);
+    } finally {
+      setDiagnosing(false);
+    }
   };
 
   // 解析内容（文本或文件）
@@ -164,22 +203,71 @@ const SmartImportAssistant: React.FC<SmartImportAssistantProps> = ({
     return parseMode === 'ai' ? 'AI智能解析' : '本地解析';
   };
 
-  // 处理文本解析
+  // 处理文本解析（增强版，支持大文本和进度显示）
   const handleTextParse = async (text: string): Promise<ImportResult> => {
     if (parseMode === 'ai' && aiConfig.enabled) {
-      // 模拟解析延迟，提供更好的用户体验
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      return await AIParser.parseWithAI(text);
+      // AI解析前进行诊断检查
+      console.log('开始AI解析，进行预检查...');
+
+      try {
+        // 检查文本大小，决定是否显示进度条
+        const needsProgress = TextSplitter.needsSplitting(text, 8000) || text.length > 5000;
+
+        if (needsProgress) {
+          // 显示进度条并使用增强解析
+          setShowProgress(true);
+          progressManager.reset();
+          progressManager.setStage('preparing', '正在准备AI解析...');
+
+          const result = await AIParser.parseWithAIEnhanced(
+            text,
+            currentChapter?.id || 'temp-chapter',
+            undefined,
+            progressManager
+          );
+
+          // 延迟关闭进度条，让用户看到完成状态
+          setTimeout(() => {
+            setShowProgress(false);
+          }, 2000);
+
+          return result;
+        } else {
+          // 小文本直接解析
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          return await AIParser.parseWithAI(text, currentChapter?.id || 'temp-chapter');
+        }
+      } catch (error) {
+        console.error('AI解析失败:', error);
+        setShowProgress(false);
+
+        // 运行诊断并显示详细错误信息
+        const diagnostics = await AIDiagnostics.runDiagnostics();
+        AIDiagnostics.showDiagnosticResults(diagnostics);
+
+        throw error;
+      }
     } else {
-      // 模拟解析延迟，提供更好的用户体验
+      // 本地解析
       await new Promise(resolve => setTimeout(resolve, 500));
-      return await SmartTextParser.parseText(text);
+      return await SmartTextParser.parseText(text, currentChapter?.id || 'temp-chapter');
     }
+  };
+
+  // 取消解析操作
+  const handleCancelParse = () => {
+    setShowProgress(false);
+    setParsing(false);
+    progressManager.reset();
+    message.info('已取消解析操作');
   };
 
   // 处理文件解析（带进度）
   const handleFileParseWithProgress = async (file: File): Promise<ImportResult> => {
-    const ocrParser = new OCRParser();
+    // 检查文件类型
+    const fileName = file.name.toLowerCase();
+    const isWordDoc = fileName.endsWith('.doc') || fileName.endsWith('.docx');
+    const isPdf = file.type.includes('pdf') || fileName.endsWith('.pdf');
 
     // 模拟进度更新
     const progressInterval = setInterval(() => {
@@ -193,10 +281,45 @@ const SmartImportAssistant: React.FC<SmartImportAssistantProps> = ({
     }, 500);
 
     try {
-      const result = await ocrParser.parse({
-        type: file.type.includes('pdf') ? 'pdf' : 'image',
-        content: file
-      });
+      let result: ImportResult;
+
+      if (isWordDoc) {
+        // 使用ParserRouter处理Word文档
+        const parserRouter = new ParserRouter();
+        const parseResult = await parserRouter.parse({
+          type: 'file',
+          content: file
+        });
+
+        // 转换ParseResult为ImportResult
+        const convertedQuestions = convertImportDataArrayToQuestions(parseResult.questions, currentChapter?.id || 'temp-chapter');
+        result = {
+          success: parseResult.success,
+          questions: convertedQuestions,
+          totalCount: convertedQuestions.length,
+          successCount: parseResult.success ? convertedQuestions.length : 0,
+          failedCount: parseResult.success ? 0 : 1,
+          errors: parseResult.errors || []
+        };
+      } else {
+        // 使用OCRParser处理PDF和图片
+        const ocrParser = new OCRParser();
+        const parseResult = await ocrParser.parse({
+          type: isPdf ? 'pdf' : 'image',
+          content: file
+        });
+
+        // 转换ParseResult为ImportResult
+        const convertedQuestions = convertImportDataArrayToQuestions(parseResult.questions, currentChapter?.id || 'temp-chapter');
+        result = {
+          success: parseResult.success,
+          questions: convertedQuestions,
+          totalCount: convertedQuestions.length,
+          successCount: parseResult.success ? convertedQuestions.length : 0,
+          failedCount: parseResult.success ? 0 : 1,
+          errors: parseResult.errors || []
+        };
+      }
 
       setOcrProgress(100);
       clearInterval(progressInterval);
@@ -316,6 +439,7 @@ const SmartImportAssistant: React.FC<SmartImportAssistantProps> = ({
         correctAnswer: q.correctAnswer,
         explanation: q.explanation,
         difficulty: q.difficulty,
+        type: q.type,
         tags: q.tags
       }));
 
@@ -333,7 +457,9 @@ const SmartImportAssistant: React.FC<SmartImportAssistantProps> = ({
         correctAnswer: typeof q.correctAnswer === 'string' ? parseInt(q.correctAnswer) : q.correctAnswer,
         explanation: q.explanation || '',
         difficulty: (q.difficulty as any) || 'medium',
+        type: q.type,
         tags: q.tags || [],
+        chapterId: currentChapter?.id || '',
         status: 'new' as const,
         wrongCount: 0,
         isMastered: false
@@ -344,6 +470,8 @@ const SmartImportAssistant: React.FC<SmartImportAssistantProps> = ({
       onClose();
       resetState();
     } catch (error) {
+      handleError(error, '操作失败');
+
       message.error('导入失败');
     } finally {
       setImporting(false);
@@ -501,9 +629,19 @@ D. 混合文本语言
                     </Space>
                   )}
                   {parseMode === 'ai' && !aiConfig.enabled && (
-                    <Text type="warning">
-                      请先在设置中配置AI服务
-                    </Text>
+                    <Space>
+                      <Text type="warning">
+                        请先在设置中配置AI服务
+                      </Text>
+                      <Button
+                        size="small"
+                        icon={<ToolOutlined />}
+                        onClick={handleAIDiagnostics}
+                        loading={diagnosing}
+                      >
+                        诊断
+                      </Button>
+                    </Space>
                   )}
                 </Col>
               </Row>
@@ -728,6 +866,13 @@ D. 混合文本语言
           </Card>
         </div>
       )}
+
+      {/* 解析进度条 */}
+      <ParseProgressBar
+        progress={currentProgress}
+        onCancel={handleCancelParse}
+        visible={showProgress}
+      />
     </Modal>
   );
 };

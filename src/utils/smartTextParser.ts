@@ -1,5 +1,6 @@
 import { ImportQuestionData, ImportResult, Question } from '../types';
 import { RuleBasedParser } from '../parsers/rule/RuleBasedParser';
+import { convertImportDataArrayToQuestions } from './questionConverter';
 
 /**
  * 智能文本解析器
@@ -10,7 +11,7 @@ export class SmartTextParser {
   /**
    * 解析各种格式的题目文本
    */
-  static async parseText(text: string): Promise<ImportResult> {
+  static async parseText(text: string, chapterId: string): Promise<ImportResult> {
     const cleanText = this.cleanText(text);
 
     try {
@@ -34,7 +35,7 @@ export class SmartTextParser {
           successCount: ruleResult.questions.length,
           failedCount: 0,
           errors: ruleResult.errors || [],
-          questions: ruleResult.questions
+          questions: convertImportDataArrayToQuestions(ruleResult.questions, chapterId)
         };
       }
 

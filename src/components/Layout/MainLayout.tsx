@@ -1,19 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Menu, Button, Typography, Space, Drawer } from 'antd';
+import { Layout, Button, Typography, Space } from 'antd';
 import {
-  MenuOutlined,
-  HomeOutlined,
-  BookOutlined,
-  FileTextOutlined,
-  EditOutlined,
-  BarChartOutlined,
   SettingOutlined,
-  ExclamationCircleOutlined,
-  CalendarOutlined,
-  BulbOutlined
+  FullscreenOutlined,
+  FullscreenExitOutlined
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAppStore } from '../../stores/useAppStore';
+import { fullscreenManager, FullscreenState } from '../../utils/fullscreenManager';
 import QuestionBankSidebar from '../Sidebar/QuestionBankSidebar';
 import ChapterSidebar from '../Sidebar/ChapterSidebar';
 import QuestionGrid from '../Question/QuestionGrid';
@@ -32,9 +26,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { currentBank, currentChapter } = useAppStore();
-  const [collapsed, setCollapsed] = useState(false);
-  const [mobileMenuVisible, setMobileMenuVisible] = useState(false);
+
   const [isElectron, setIsElectron] = useState(false);
+  const [fullscreenState, setFullscreenState] = useState<FullscreenState>(fullscreenManager.getState());
 
   useEffect(() => {
     // 检查是否在Electron环境中
@@ -48,62 +42,25 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     if (checkElectron()) {
       document.body.classList.add('electron-app');
     }
+
+    // 监听全屏状态变化
+    const handleFullscreenChange = (state: FullscreenState) => {
+      setFullscreenState(state);
+      console.log('全屏状态变化:', state);
+    };
+
+    fullscreenManager.addListener(handleFullscreenChange);
+
+    // 清理函数
+    return () => {
+      fullscreenManager.removeListener(handleFullscreenChange);
+    };
   }, []);
 
-  const menuItems = [
-    {
-      key: '/',
-      icon: <HomeOutlined />,
-      label: '首页',
-    },
-    {
-      key: '/study',
-      icon: <BookOutlined />,
-      label: '背题模式',
-    },
-    {
-      key: '/quick-study',
-      icon: <EditOutlined />,
-      label: '快刷模式',
-    },
-    {
-      key: '/practice',
-      icon: <EditOutlined />,
-      label: '刷题模式',
-    },
-    {
-      key: '/test',
-      icon: <FileTextOutlined />,
-      label: '测试模式',
-    },
-    {
-      key: '/statistics',
-      icon: <BarChartOutlined />,
-      label: '统计分析',
-    },
-    {
-      key: '/wrong-questions',
-      icon: <ExclamationCircleOutlined />,
-      label: '错题本',
-    },
-    {
-      key: '/study-plan',
-      icon: <CalendarOutlined />,
-      label: '学习计划',
-    },
-    {
-      key: '/smart-recommendation',
-      icon: <BulbOutlined />,
-      label: '智能推荐',
-    },
-  ];
 
-  const handleMenuClick = ({ key }: { key: string }) => {
-    navigate(key);
-    setMobileMenuVisible(false);
-  };
 
-  const isHomePage = location.pathname === '/';
+  const isHomePage = location.pathname === '/' && !currentBank;
+  const isHomeRoute = location.pathname === '/home';
   const isSettingsPage = location.pathname === '/desktop-settings';
 
   // 调试信息
@@ -123,30 +80,29 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       <Header className="main-header">
         <div className="header-content">
           <div className="header-left">
-            <Button
-              type="text"
-              icon={<MenuOutlined />}
-              onClick={() => setMobileMenuVisible(true)}
-              className="mobile-menu-trigger"
-            />
+
             <Title level={3} style={{ margin: 0, color: 'white' }}>
               workbook
             </Title>
           </div>
           
-          <div className="header-center">
-            <Menu
-              theme="dark"
-              mode="horizontal"
-              selectedKeys={[location.pathname]}
-              items={menuItems}
-              onClick={handleMenuClick}
-              className="desktop-menu"
-            />
-          </div>
+
 
           <div className="header-right">
             <Space>
+              {/* 全屏切换按钮 */}
+              {fullscreenState.isSupported && (
+                <Button
+                  type="text"
+                  icon={fullscreenState.isFullscreen ? <FullscreenExitOutlined /> : <FullscreenOutlined />}
+                  style={{ color: 'white' }}
+                  onClick={() => fullscreenManager.toggleFullscreen()}
+                  title={fullscreenState.isFullscreen ? '退出全屏' : '进入全屏'}
+                >
+                  {fullscreenState.isFullscreen ? '退出全屏' : '全屏'}
+                </Button>
+              )}
+
               {!isSettingsPage && (
                 <Button
                   type="text"
@@ -162,40 +118,13 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         </div>
       </Header>
 
-      <Layout className={collapsed ? 'sidebar-collapsed' : ''}>
-        {/* 左侧功能导航栏 - 在所有页面都显示 */}
-        <Sider
-          width={240}
-          className="function-sidebar"
-          collapsible
-          collapsed={collapsed}
-          onCollapse={setCollapsed}
-          breakpoint="lg"
-          collapsedWidth={64}
-        >
-          <div className="function-menu-container">
-            <Menu
-              mode="vertical"
-              selectedKeys={[location.pathname]}
-              items={menuItems}
-              onClick={handleMenuClick}
-              className="function-menu"
-            />
-          </div>
-        </Sider>
+      <Layout>
+        {/* 固定题库侧边栏 */}
+        {isHomePage && <QuestionBankSidebar />}
 
-        {/* 首页显示题库和章节选择 */}
+        {/* 首页显示题库和章节选择，/home路径显示HomePage组件 */}
         {isHomePage ? (
           <>
-            {/* 中间题库列表 */}
-            <Sider
-              width={280}
-              className="bank-sidebar"
-              theme="light"
-            >
-              <QuestionBankSidebar />
-            </Sider>
-
             {/* 右侧章节列表或题目网格 */}
             {currentBank ? (
               currentChapter ? (
@@ -207,6 +136,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                   width={280}
                   className="chapter-sidebar"
                   theme="light"
+                  style={{ marginLeft: '280px' }}
                 >
                   <ChapterSidebar />
                 </Sider>
@@ -219,6 +149,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               </Content>
             )}
           </>
+        ) : isHomeRoute ? (
+          /* /home路径显示HomePage组件 */
+          <Content className="page-content">
+            {children}
+          </Content>
         ) : (
           /* 其他页面显示主要内容 */
           <Content className="page-content">
@@ -227,21 +162,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         )}
       </Layout>
 
-      {/* 移动端菜单抽屉 */}
-      <Drawer
-        title="菜单"
-        placement="left"
-        onClose={() => setMobileMenuVisible(false)}
-        open={mobileMenuVisible}
-        className="mobile-menu-drawer"
-      >
-        <Menu
-          mode="vertical"
-          selectedKeys={[location.pathname]}
-          items={menuItems}
-          onClick={handleMenuClick}
-        />
-      </Drawer>
+
 
       {/* 性能监控 */}
       <PerformanceMonitor />

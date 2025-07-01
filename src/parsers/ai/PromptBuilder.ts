@@ -7,7 +7,7 @@ import { PromptTemplate, getPromptTemplate, FewShotExample } from './PromptTempl
 import { FormatDetector } from '../rule/FormatDetector';
 
 export interface PromptContext {
-  inputType: 'text' | 'ocr' | 'pdf';
+  inputType: 'text' | 'ocr' | 'pdf' | 'file';
   textLength: number;
   hasMultipleQuestions: boolean;
   hasOCRErrors: boolean;
@@ -27,6 +27,8 @@ export interface BuiltPrompt {
     strategy: string;
     fewShotCount: number;
     confidence: number;
+    detectedFormat?: string;
+    formatConfidence?: number;
   };
 }
 

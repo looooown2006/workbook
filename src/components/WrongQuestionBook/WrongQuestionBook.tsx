@@ -13,8 +13,7 @@ import {
   Tooltip,
   message,
   Modal,
-  Typography,
-  Divider
+  Typography
 } from 'antd';
 import {
   BookOutlined,
@@ -24,17 +23,22 @@ import {
   StarOutlined,
   StarFilled,
   DeleteOutlined,
-  EditOutlined,
-  PlayCircleOutlined,
   BarChartOutlined,
-  FilterOutlined
+  PlayCircleOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '../../stores/useAppStore';
-import { WrongQuestion, Question } from '../../types';
-import { formatDate, formatDuration } from '../../utils/helpers';
+import { WrongQuestion } from '../../types';
+import { formatDate } from '../../utils/helpers';
+import { handleError } from '../../utils/errorHandler';
+import {
+  filterWrongQuestions,
+  getBankName,
+  getChapterName,
+  getQuestionTitle
+} from '../../utils/dataUtils';
 
-const { Title, Text, Paragraph } = Typography;
+const { Text } = Typography;
 const { Option } = Select;
 const { Search } = Input;
 const { confirm } = Modal;
@@ -71,33 +75,16 @@ const WrongQuestionBook: React.FC = () => {
 
   // 过滤错题
   useEffect(() => {
-    let filtered = wrongQuestions;
-
-    // 按状态过滤
-    if (filterStatus !== 'all') {
-      filtered = filtered.filter(wq => wq.status === filterStatus);
-    }
-
-    // 按题库过滤
-    if (filterBank !== 'all') {
-      filtered = filtered.filter(wq => wq.bankId === filterBank);
-    }
-
-    // 按章节过滤
-    if (filterChapter !== 'all') {
-      filtered = filtered.filter(wq => wq.chapterId === filterChapter);
-    }
-
-    // 按搜索文本过滤
-    if (searchText) {
-      filtered = filtered.filter(wq => {
-        const question = questions.find(q => q.id === wq.questionId);
-        return question?.title.toLowerCase().includes(searchText.toLowerCase()) ||
-               wq.notes?.toLowerCase().includes(searchText.toLowerCase()) ||
-               wq.tags.some(tag => tag.toLowerCase().includes(searchText.toLowerCase()));
-      });
-    }
-
+    const filtered = filterWrongQuestions(
+      wrongQuestions,
+      {
+        status: filterStatus,
+        bankId: filterBank,
+        chapterId: filterChapter,
+        searchText
+      },
+      questions
+    );
     setFilteredWrongQuestions(filtered);
   }, [wrongQuestions, filterStatus, filterBank, filterChapter, searchText, questions]);
 
@@ -127,6 +114,8 @@ const WrongQuestionBook: React.FC = () => {
         message.success('已标记为掌握');
       }
     } catch (error) {
+      handleError(error, '操作失败');
+
       message.error('操作失败');
     }
   };
@@ -136,6 +125,8 @@ const WrongQuestionBook: React.FC = () => {
       await ignoreWrongQuestion(wrongQuestionId);
       message.success('已忽略该错题');
     } catch (error) {
+      handleError(error, '操作失败');
+
       message.error('操作失败');
     }
   };
@@ -152,26 +143,18 @@ const WrongQuestionBook: React.FC = () => {
           await deleteWrongQuestion(wrongQuestionId);
           message.success('错题已删除');
         } catch (error) {
+          handleError(error, '操作失败');
+
           message.error('删除失败');
         }
       }
     });
   };
 
-  const getQuestionTitle = (questionId: string) => {
-    const question = questions.find(q => q.id === questionId);
-    return question?.title || '题目已删除';
-  };
-
-  const getBankName = (bankId: string) => {
-    const bank = questionBanks.find(b => b.id === bankId);
-    return bank?.name || '未知题库';
-  };
-
-  const getChapterName = (chapterId: string) => {
-    const chapter = chapters.find(c => c.id === chapterId);
-    return chapter?.name || '未知章节';
-  };
+  // 使用公共工具函数
+  const getQuestionTitleLocal = (questionId: string) => getQuestionTitle(questions, questionId);
+  const getBankNameLocal = (bankId: string) => getBankName(questionBanks, bankId);
+  const getChapterNameLocal = (chapterId: string) => getChapterName(chapters, chapterId);
 
   const columns = [
     {
@@ -180,9 +163,9 @@ const WrongQuestionBook: React.FC = () => {
       key: 'question',
       ellipsis: true,
       render: (questionId: string) => (
-        <Tooltip title={getQuestionTitle(questionId)}>
+        <Tooltip title={getQuestionTitleLocal(questionId)}>
           <Text ellipsis style={{ maxWidth: 200 }}>
-            {getQuestionTitle(questionId)}
+            {getQuestionTitleLocal(questionId)}
           </Text>
         </Tooltip>
       ),
@@ -192,9 +175,9 @@ const WrongQuestionBook: React.FC = () => {
       key: 'location',
       render: (record: WrongQuestion) => (
         <div>
-          <div>{getBankName(record.bankId)}</div>
+          <div>{getBankNameLocal(record.bankId)}</div>
           <Text type="secondary" style={{ fontSize: '12px' }}>
-            {getChapterName(record.chapterId)}
+            {getChapterNameLocal(record.chapterId)}
           </Text>
         </div>
       ),

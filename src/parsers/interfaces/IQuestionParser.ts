@@ -5,7 +5,7 @@
 import { ImportQuestionData } from '../../types';
 
 export interface ParseInput {
-  type: 'text' | 'image' | 'pdf';
+  type: 'text' | 'image' | 'pdf' | 'file';
   content: string | File;
   options?: ParseOptions;
 }

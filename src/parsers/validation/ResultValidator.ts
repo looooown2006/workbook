@@ -364,7 +364,7 @@ export class ResultValidator {
    * 快速验证单个题目
    */
   static validateSingle(question: ImportQuestionData): boolean {
-    return question.title && 
+    return !!question.title &&
            question.title.trim().length > 0 &&
            question.options &&
            Array.isArray(question.options) &&

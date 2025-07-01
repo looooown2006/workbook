@@ -1,10 +1,8 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
-import { useAppStore } from '../stores/useAppStore';
 import QuickStudyMode from '../components/Study/QuickStudyMode';
 import StudyMode from '../components/Study/StudyMode';
 import PracticeMode from '../components/Study/PracticeMode';
-import WrongQuestionReviewMode from '../components/Study/WrongQuestionReviewMode';
 
 const StudyPage: React.FC = () => {
   const location = useLocation();

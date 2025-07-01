@@ -3,15 +3,7 @@
  * 负责初始化和管理Tesseract Worker
  */
 
-// import Tesseract from 'tesseract.js';
-
-// 模拟Tesseract类型定义
-interface MockTesseractResult {
-  data: {
-    text: string;
-    confidence: number;
-  };
-}
+import Tesseract, { Worker } from 'tesseract.js';
 
 export interface OCRConfig {
   language: string;
@@ -21,16 +13,21 @@ export interface OCRConfig {
   preserveInterwordSpaces?: boolean;
 }
 
+export interface RecognizeOptions {
+  lang: string;
+  options?: Record<string, any>;
+}
+
 export class TesseractManager {
-  private worker: any = null;
+  private worker: Worker | null = null;
   private isInitialized = false;
   private config: OCRConfig;
 
   constructor(config: Partial<OCRConfig> = {}) {
     this.config = {
       language: 'chi_sim+eng',
-      oem: 1, // Tesseract.OEM.LSTM_ONLY,
-      psm: 6, // Tesseract.PSM.SINGLE_BLOCK,
+      oem: 1, // LSTM OCR引擎
+      psm: 6, // 单一文本块
       whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz().,?!:;""\'\'，。？！：；（）【】',
       preserveInterwordSpaces: true,
       ...config
@@ -38,7 +35,7 @@ export class TesseractManager {
   }
 
   /**
-   * 初始化Tesseract Worker（模拟版本）
+   * 初始化Tesseract Worker
    */
   async initialize(): Promise<void> {
     if (this.isInitialized) {
@@ -48,17 +45,21 @@ export class TesseractManager {
     try {
       console.log('初始化OCR引擎...');
 
-      // 模拟初始化延迟
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // 创建Tesseract Worker
+      this.worker = await Tesseract.createWorker(this.config.language, 1, {
+        logger: m => console.log('OCR进度:', m)
+      });
 
-      this.worker = {
-        // 模拟worker对象
-        initialized: true,
-        config: this.config
-      };
+      // 设置参数
+      await this.worker.setParameters({
+        tessedit_ocr_engine_mode: this.config.oem,
+        tessedit_pageseg_mode: this.config.psm,
+        tessedit_char_whitelist: this.config.whitelist || '',
+        preserve_interword_spaces: this.config.preserveInterwordSpaces ? '1' : '0'
+      });
 
       this.isInitialized = true;
-      console.log('OCR引擎初始化完成（模拟模式）');
+      console.log('OCR引擎初始化完成');
     } catch (error) {
       console.error('OCR初始化失败:', error);
       throw new Error(`OCR初始化失败: ${error instanceof Error ? error.message : String(error)}`);
@@ -66,29 +67,28 @@ export class TesseractManager {
   }
 
   /**
-   * 识别图片中的文字（模拟版本）
+   * 识别图片中的文字
    */
-  async recognize(image: string | File | HTMLCanvasElement): Promise<MockTesseractResult> {
-    if (!this.isInitialized) {
+  async recognize(
+    image: string | File | HTMLCanvasElement | ImageData,
+    options?: RecognizeOptions
+  ): Promise<Tesseract.RecognizeResult> {
+    if (!this.isInitialized || !this.worker) {
       await this.initialize();
     }
 
+    if (!this.worker) {
+      throw new Error('OCR Worker未初始化');
+    }
+
     try {
-      // 模拟OCR处理延迟
-      await new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 2000));
+      console.log('开始OCR识别...');
 
-      // 分析图片内容生成模拟文本
-      const mockText = await this.generateMockOCRText(image);
-      const confidence = 75 + Math.random() * 20; // 75-95%的置信度
+      const result = await this.worker.recognize(image, options?.options || {});
 
-      console.log('模拟OCR识别完成，置信度:', confidence);
+      console.log('OCR识别完成，置信度:', result.data.confidence);
 
-      return {
-        data: {
-          text: mockText,
-          confidence: confidence
-        }
-      };
+      return result;
     } catch (error) {
       console.error('OCR识别失败:', error);
       throw new Error(`OCR识别失败: ${error instanceof Error ? error.message : String(error)}`);
@@ -96,39 +96,16 @@ export class TesseractManager {
   }
 
   /**
-   * 生成模拟OCR文本
+   * 获取支持的语言列表
    */
-  private async generateMockOCRText(image: string | File | HTMLCanvasElement): Promise<string> {
-    // 这里可以根据图片特征生成更真实的模拟文本
-    const sampleTexts = [
-      `1. 以下哪个选项是正确的JavaScript变量声明方式？
-A. var name = "张三";
-B. variable name = "张三";
-C. string name = "张三";
-D. declare name = "张三";
-答案：A
-解析：JavaScript使用var、let或const关键字声明变量。`,
-
-      `2. 在React中，以下哪个Hook用于管理组件状态？
-A. useEffect
-B. useState
-C. useContext
-D. useCallback
-答案：B
-解析：useState是React中用于在函数组件中添加状态的Hook。`,
-
-      `3. CSS中，以下哪个属性用于设置元素的显示方式？
-A. visibility
-B. opacity
-C. display
-D. position
-答案：C
-解析：display属性用于设置元素的显示类型，如block、inline、flex等。`
+  getSupportedLanguages(): string[] {
+    return [
+      'chi_sim',     // 中文简体
+      'chi_tra',     // 中文繁体
+      'eng',         // 英文
+      'chi_sim+eng', // 中英文混合
+      'chi_tra+eng'  // 繁体中英文混合
     ];
-
-    // 随机选择一个示例文本
-    const randomIndex = Math.floor(Math.random() * sampleTexts.length);
-    return sampleTexts[randomIndex];
   }
 
   /**
@@ -136,12 +113,12 @@ D. position
    */
   async updateConfig(newConfig: Partial<OCRConfig>): Promise<void> {
     this.config = { ...this.config, ...newConfig };
-    
+
     if (this.worker && this.isInitialized) {
       await this.worker.setParameters({
         tessedit_ocr_engine_mode: this.config.oem,
         tessedit_pageseg_mode: this.config.psm,
-        tessedit_char_whitelist: this.config.whitelist,
+        tessedit_char_whitelist: this.config.whitelist || '',
         preserve_interword_spaces: this.config.preserveInterwordSpaces ? '1' : '0'
       });
     }
@@ -155,15 +132,22 @@ D. position
   }
 
   /**
-   * 销毁Worker
+   * 清理资源
    */
-  async terminate(): Promise<void> {
+  async cleanup(): Promise<void> {
     if (this.worker) {
       await this.worker.terminate();
       this.worker = null;
       this.isInitialized = false;
       console.log('Tesseract Worker已销毁');
     }
+  }
+
+  /**
+   * 销毁Worker（别名方法）
+   */
+  async terminate(): Promise<void> {
+    await this.cleanup();
   }
 
   /**

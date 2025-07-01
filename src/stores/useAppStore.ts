@@ -15,6 +15,7 @@ import {
 } from '../types';
 import { dbManager } from '../utils/database';
 import { WrongQuestionManager } from '../utils/wrongQuestionManager';
+import { handleError } from '../utils/errorHandler';
 
 interface AppStore extends AppState {
   // 数据
@@ -90,10 +91,24 @@ interface AppStore extends AppState {
   setError: (error: string | undefined) => void;
   clearError: () => void;
 
-  // Actions - 用户统计（临时添加，避免编译错误）
-  userStats?: any;
+  // Actions - 用户统计和数据获取
+  userStats: {
+    totalQuestions: number;
+    correctAnswers: number;
+    wrongAnswers: number;
+    accuracy: number;
+    studyTime: number;
+    streakDays: number;
+  };
   getQuestions: () => Question[];
-  getUserStats: () => any;
+  getUserStats: () => {
+    totalQuestions: number;
+    correctAnswers: number;
+    wrongAnswers: number;
+    accuracy: number;
+    studyTime: number;
+    streakDays: number;
+  };
 
   // Actions - 初始化
   initializeApp: () => Promise<void>;
@@ -209,6 +224,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
         questionBanks: [...state.questionBanks, bank] 
       }));
     } catch (error) {
+      handleError(error, '添加题库');
       set({ error: '添加题库失败' });
     }
   },

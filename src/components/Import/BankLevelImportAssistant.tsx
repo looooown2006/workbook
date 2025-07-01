@@ -26,10 +26,12 @@ import {
 import { useAppStore } from '../../stores/useAppStore';
 import { AIParser } from '../../utils/aiParser';
 import { AIConfigManager } from '../../utils/aiConfig';
+import { AIDiagnostics } from '../../utils/aiDiagnostics';
 import { ImportQuestionData, ImportResult, QuestionBank, Chapter, Question } from '../../types';
 import FileUploader from './FileUploader';
 import { OCRParser } from '../../parsers/ocr/OCRParser';
 import { ParserRouter } from '../../parsers/router/ParserRouter';
+import { convertImportDataArrayToQuestions } from '../../utils/questionConverter';
 
 const { TextArea } = Input;
 const { Text, Title } = Typography;
@@ -148,7 +150,15 @@ const BankLevelImportAssistant: React.FC<BankLevelImportAssistantProps> = ({
         message.error('AI解析未能识别到有效的题目格式，请检查输入内容');
       }
     } catch (error) {
-      message.error(`解析失败: ${error}`);
+      console.error('解析失败:', error);
+
+      // 如果是AI解析失败，运行诊断
+      if (inputMode === 'text') {
+        const diagnostics = await AIDiagnostics.runDiagnostics();
+        AIDiagnostics.showDiagnosticResults(diagnostics);
+      } else {
+        message.error(`解析失败: ${error}`);
+      }
     } finally {
       setParsing(false);
       setOcrProgress(0);
@@ -174,11 +184,14 @@ const BankLevelImportAssistant: React.FC<BankLevelImportAssistantProps> = ({
 
     const parseResult = await router.parse(parseInput, routingContext);
 
+    // 转换ImportQuestionData为Question
+    const convertedQuestions = convertImportDataArrayToQuestions(parseResult.questions, 'temp-chapter');
+
     return {
       success: parseResult.success,
-      questions: parseResult.questions,
-      totalCount: parseResult.questions.length,
-      successCount: parseResult.success ? parseResult.questions.length : 0,
+      questions: convertedQuestions,
+      totalCount: convertedQuestions.length,
+      successCount: parseResult.success ? convertedQuestions.length : 0,
       failedCount: parseResult.success ? 0 : 1,
       errors: parseResult.errors || []
     };
@@ -367,7 +380,9 @@ const BankLevelImportAssistant: React.FC<BankLevelImportAssistantProps> = ({
             correctAnswer: typeof q.correctAnswer === 'string' ? parseInt(q.correctAnswer) : q.correctAnswer,
             explanation: q.explanation,
             difficulty: (q.difficulty as any) || 'medium',
+            type: q.type,
             tags: q.tags || [],
+            chapterId: assignment.chapterId,
             status: 'new' as const,
             wrongCount: 0,
             isMastered: false

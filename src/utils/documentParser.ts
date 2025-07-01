@@ -1,5 +1,6 @@
 import mammoth from 'mammoth';
 import { ImportQuestionData, ImportResult } from '../types';
+import type { DifficultyLevel } from '../types';
 import { processImportData } from './helpers';
 
 // 文档解析器类
@@ -116,7 +117,7 @@ export class DocumentParser {
       else if (this.isDifficulty(line)) {
         const difficulty = this.extractDifficulty(line);
         if (difficulty) {
-          currentQuestion.difficulty = difficulty;
+          currentQuestion.difficulty = difficulty as DifficultyLevel;
         }
       }
       // 如果当前有题目但没有匹配到特定格式，可能是题目内容的延续
@@ -251,18 +252,18 @@ export class DocumentParser {
 
   // 完成题目构建
   private static finalizeQuestion(
-    question: Partial<ImportQuestionData>, 
-    options: string[], 
+    questionData: Partial<ImportQuestionData>,
+    options: string[],
     questions: ImportQuestionData[]
   ): void {
-    if (question.title && options.length >= 2) {
+    if (questionData.title && options.length >= 2) {
       questions.push({
-        title: question.title,
+        title: questionData.title,
         options: [...options],
-        correctAnswer: question.correctAnswer ?? 0,
-        explanation: question.explanation,
-        difficulty: question.difficulty,
-        tags: question.tags
+        correctAnswer: questionData.correctAnswer ?? 0,
+        explanation: questionData.explanation,
+        difficulty: questionData.difficulty as DifficultyLevel,
+        tags: questionData.tags
       });
     }
   }

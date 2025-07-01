@@ -33,6 +33,7 @@ import {
 } from '@ant-design/icons';
 import { useAppStore } from '../../stores/useAppStore';
 import { formatDate, formatFileSize } from '../../utils/helpers';
+import { handleError } from '../../utils/errorHandler';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -176,6 +177,8 @@ const DataBackup: React.FC = () => {
           await new Promise(resolve => setTimeout(resolve, 3000));
           message.success('数据恢复成功，请重启应用以生效');
         } catch (error) {
+          handleError(error, '操作失败');
+
           message.error('数据恢复失败');
         } finally {
           setIsRestoring(false);
@@ -204,6 +207,8 @@ const DataBackup: React.FC = () => {
       await new Promise(resolve => setTimeout(resolve, 1000));
       message.success('已同步到云端');
     } catch (error) {
+      handleError(error, '操作失败');
+
       message.error('云同步失败');
     }
   };
@@ -217,6 +222,8 @@ const DataBackup: React.FC = () => {
       // 在实际应用中，这里会调用Electron的文件保存对话框
       message.success(`备份 "${backup.name}" 已导出`);
     } catch (error) {
+      handleError(error, '操作失败');
+
       message.error('导出失败');
     }
   };
@@ -227,6 +234,8 @@ const DataBackup: React.FC = () => {
       message.success('备份导入成功');
       loadBackupRecords(); // 重新加载备份列表
     } catch (error) {
+      handleError(error, '操作失败');
+
       message.error('导入失败');
     }
   };

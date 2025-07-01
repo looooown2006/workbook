@@ -125,7 +125,9 @@ export const convertImportDataToQuestion = (
     correctAnswer: correctAnswerIndex,
     explanation: data.explanation?.trim(),
     difficulty: data.difficulty as any,
+    type: data.type,
     tags: data.tags || [],
+    chapterId: '', // 需要在调用时设置
     status: 'new',
     wrongCount: 0,
     isMastered: false

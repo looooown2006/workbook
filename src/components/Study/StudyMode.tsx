@@ -4,21 +4,12 @@ import {
   Button,
   Space,
   Typography,
-  Progress,
-  Row,
-  Col,
-  Tag,
   Divider,
-  Tooltip,
   Checkbox,
+  Tag,
   message
 } from 'antd';
 import {
-  ArrowLeftOutlined,
-  ArrowRightOutlined,
-  StarOutlined,
-  StarFilled,
-  HomeOutlined,
   EyeOutlined,
   EyeInvisibleOutlined
 } from '@ant-design/icons';
@@ -26,6 +17,12 @@ import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '../../stores/useAppStore';
 import { Question } from '../../types';
 import { getStatusColor } from '../../utils/helpers';
+import { filterMasteredQuestions } from '../../utils/dataUtils';
+import {
+  QuestionInfo,
+  NavigationButtons,
+  MasteredButton
+} from '../Common/CommonComponents';
 import EmptyState from '../Common/EmptyState';
 
 const { Title, Text, Paragraph } = Typography;
@@ -56,17 +53,14 @@ const StudyMode: React.FC<StudyModeProps> = ({ questions: propQuestions }) => {
 
   // 过滤题目
   useEffect(() => {
-    let filtered = questions;
-    if (skipMastered) {
-      filtered = questions.filter(q => !q.isMastered);
-    }
+    const filtered = filterMasteredQuestions(questions, !skipMastered);
     setFilteredQuestions(filtered);
-    
-    if (filtered.length > 0 && currentQuestion) {
-      const index = filtered.findIndex(q => q.id === currentQuestion.id);
-      setCurrentIndex(index >= 0 ? index : 0);
+
+    // 如果当前索引超出范围，重置为0
+    if (filtered.length > 0 && currentIndex >= filtered.length) {
+      setCurrentIndex(0);
     }
-  }, [questions, currentQuestion, skipMastered]);
+  }, [questions, skipMastered, currentIndex]);
 
   // 当前题目
   const question = filteredQuestions[currentIndex];
@@ -77,19 +71,19 @@ const StudyMode: React.FC<StudyModeProps> = ({ questions: propQuestions }) => {
     }
   }, [question, setCurrentQuestion]);
 
-  const handleNext = () => {
+  const handleNext = React.useCallback((): void => {
     if (currentIndex < filteredQuestions.length - 1) {
-      setCurrentIndex(currentIndex + 1);
+      setCurrentIndex(prev => prev + 1);
     }
-  };
+  }, [currentIndex, filteredQuestions.length]);
 
-  const handlePrevious = () => {
+  const handlePrevious = React.useCallback((): void => {
     if (currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1);
+      setCurrentIndex(prev => prev - 1);
     }
-  };
+  }, [currentIndex]);
 
-  const handleToggleMastered = async () => {
+  const handleToggleMastered = React.useCallback(async (): Promise<void> => {
     if (!question) return;
 
     try {
@@ -105,15 +99,15 @@ const StudyMode: React.FC<StudyModeProps> = ({ questions: propQuestions }) => {
       console.error('操作失败:', error);
       message.error('操作失败');
     }
-  };
+  }, [question, markQuestionAsMastered, unmarkQuestionAsMastered]);
 
-  const handleBackToHome = () => {
+  const handleBackToHome = React.useCallback((): void => {
     navigate('/');
-  };
+  }, [navigate]);
 
-  const handleSkipMasteredChange = (checked: boolean) => {
+  const handleSkipMasteredChange = React.useCallback((checked: boolean): void => {
     setSkipMastered(checked);
-  };
+  }, []);
 
   // 如果没有选择题库或章节，显示空状态
   if (!currentBank || !currentChapter) {
@@ -139,53 +133,28 @@ const StudyMode: React.FC<StudyModeProps> = ({ questions: propQuestions }) => {
   if (!question) {
     return (
       <div style={{ padding: '24px', textAlign: 'center' }}>
-        <Text type="secondary">加载中...</Text>
+        <Text type="secondary">
+          {filteredQuestions.length === 0 ? '没有可用的题目' : '加载中...'}
+        </Text>
       </div>
     );
   }
 
-  const progress = Math.round(((currentIndex + 1) / filteredQuestions.length) * 100);
+  // progress 已在 QuestionInfo 组件中计算，这里不需要
 
   return (
     <div style={{ padding: '24px', maxWidth: '800px', margin: '0 auto' }}>
       {/* 头部信息 */}
-      <Card style={{ marginBottom: '16px' }}>
-        <Row justify="space-between" align="middle">
-          <Col>
-            <Space>
-              <Button 
-                icon={<HomeOutlined />} 
-                onClick={handleBackToHome}
-              >
-                返回首页
-              </Button>
-              <Tag color="green">背题模式</Tag>
-              <Text strong>{currentBank.name} - {currentChapter.name}</Text>
-            </Space>
-          </Col>
-          <Col>
-            <Space>
-              <Text>进度: {currentIndex + 1}/{filteredQuestions.length}</Text>
-              <Tooltip title={question.isMastered ? '取消斩题' : '标记斩题'}>
-                <Button
-                  type="text"
-                  icon={question.isMastered ? <StarFilled /> : <StarOutlined />}
-                  style={{ color: question.isMastered ? '#faad14' : undefined }}
-                  onClick={handleToggleMastered}
-                />
-              </Tooltip>
-            </Space>
-          </Col>
-        </Row>
-        <Progress 
-          percent={progress} 
-          style={{ marginTop: '8px' }}
-          strokeColor={{
-            '0%': '#52c41a',
-            '100%': '#87d068',
-          }}
-        />
-      </Card>
+      <QuestionInfo
+        bankName={currentBank.name}
+        chapterName={currentChapter.name}
+        mode="背题模式"
+        currentIndex={currentIndex}
+        totalCount={filteredQuestions.length}
+        isMastered={question.isMastered}
+        onToggleMastered={handleToggleMastered}
+        onBackToHome={handleBackToHome}
+      />
 
       {/* 控制选项 */}
       <Card style={{ marginBottom: '16px' }}>
@@ -335,30 +304,18 @@ const StudyMode: React.FC<StudyModeProps> = ({ questions: propQuestions }) => {
         {/* 导航按钮 */}
         <div style={{ marginTop: '24px', textAlign: 'center' }}>
           <Space size="large">
-            <Button
-              icon={<ArrowLeftOutlined />}
-              onClick={handlePrevious}
-              disabled={currentIndex === 0}
-            >
-              上一题
-            </Button>
-            
-            <Button
-              type="primary"
-              icon={<ArrowRightOutlined />}
-              onClick={handleNext}
-              disabled={currentIndex === filteredQuestions.length - 1}
-            >
-              下一题
-            </Button>
-            
-            <Button
-              icon={question.isMastered ? <StarFilled /> : <StarOutlined />}
-              style={{ color: question.isMastered ? '#faad14' : undefined }}
+            <NavigationButtons
+              currentIndex={currentIndex}
+              totalCount={filteredQuestions.length}
+              onPrevious={handlePrevious}
+              onNext={handleNext}
+            />
+
+            <MasteredButton
+              isMastered={question.isMastered}
               onClick={handleToggleMastered}
-            >
-              {question.isMastered ? '取消斩题' : '标记斩题'}
-            </Button>
+              showText={true}
+            />
           </Space>
         </div>
       </Card>

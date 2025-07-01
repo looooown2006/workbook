@@ -7,10 +7,25 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies
 node_modules
+
+# Build outputs
 dist
 dist-ssr
+dist-electron*
 *.local
+
+# Temporary and test files
+test-*.txt
+test-*.html
+debug-*.html
+*.tmp
+*.temp
+
+# Generated files
+create-icons.js
+generate-icons.html
 
 # Editor directories and files
 .vscode/*
@@ -22,3 +37,12 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# OS generated files
+Thumbs.db
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db

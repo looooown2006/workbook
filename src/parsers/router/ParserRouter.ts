@@ -6,10 +6,15 @@
 import { IQuestionParser, ParseInput, ParseResult } from '../interfaces/IQuestionParser';
 import { RuleBasedParser } from '../rule/RuleBasedParser';
 import { OCRParser } from '../ocr/OCRParser';
+import { WordParser } from '../document/WordParser';
 import { AIParser } from '../../utils/aiParser';
 import { FormatDetector } from '../rule/FormatDetector';
 import { AIConfigManager } from '../../utils/aiConfig';
 import { PerformanceMonitor } from '../monitoring/PerformanceMonitor';
+import { CacheManager } from '../cache/CacheManager';
+import { MemoryOptimizer } from '../optimization/MemoryOptimizer';
+import { CostOptimizer } from '../optimization/CostOptimizer';
+import { AdaptiveStrategy } from '../adaptive/AdaptiveStrategy';
 
 export interface ParsingStrategy {
   name: string;
@@ -18,7 +23,7 @@ export interface ParsingStrategy {
   speed: number; // 处理速度 (0-10)
   accuracy: number; // 准确率 (0-10)
   reliability: number; // 可靠性 (0-10)
-  supportedTypes: ('text' | 'image' | 'pdf')[];
+  supportedTypes: ('text' | 'image' | 'pdf' | 'file')[];
   supportedFormats: string[];
   requirements: string[]; // 使用要求
 }
@@ -33,7 +38,7 @@ export interface RoutingDecision {
 }
 
 export interface RoutingContext {
-  inputType: 'text' | 'image' | 'pdf';
+  inputType: 'text' | 'image' | 'pdf' | 'file';
   textLength?: number;
   fileSize?: number;
   detectedFormat?: string;
@@ -47,6 +52,10 @@ export interface RoutingContext {
 export class ParserRouter {
 
   private monitor = PerformanceMonitor.getInstance();
+  private cache = CacheManager.getInstance();
+  private memoryOptimizer = MemoryOptimizer.getInstance();
+  private costOptimizer = CostOptimizer.getInstance();
+  private adaptiveStrategy = AdaptiveStrategy.getInstance();
   private strategies: ParsingStrategy[] = [
     {
       name: 'rule_based',
@@ -117,8 +126,69 @@ export class ParserRouter {
    */
   async parse(input: ParseInput, context?: Partial<RoutingContext>): Promise<ParseResult> {
     const startTime = Date.now();
-    
+
+    // 检查内存使用情况
+    const memoryStats = this.memoryOptimizer.getCurrentMemoryStats();
+    if (memoryStats.percentage > 80) {
+      console.warn(`内存使用率较高: ${memoryStats.percentage.toFixed(1)}%`);
+      await this.memoryOptimizer.optimizeMemory();
+    }
+
     try {
+      // 检查缓存
+      const inputText = typeof input.content === 'string' ? input.content : '';
+      if (inputText) {
+        // 先进行路由决策以确定策略
+        const tempDecision = await this.route(input, context);
+        const cachedResult = this.cache.get(inputText, tempDecision.selectedStrategy.name, tempDecision.selectedStrategy.name);
+
+        if (cachedResult) {
+          console.log('使用缓存结果');
+          return {
+            ...cachedResult,
+            metadata: {
+              ...cachedResult.metadata,
+              fromCache: true,
+              processingTime: Date.now() - startTime
+            }
+          };
+        }
+      }
+      // 特殊处理：Word文档直接使用WordParser
+      if (input.type === 'file' && input.content instanceof File) {
+        const fileName = input.content.name.toLowerCase();
+        if (fileName.endsWith('.doc') || fileName.endsWith('.docx')) {
+          console.log('检测到Word文档，使用WordParser处理');
+
+          const wordResult = await WordParser.parseWordFile(input.content);
+
+          return {
+            success: wordResult.success,
+            questions: wordResult.questions.map(q => ({
+              ...q,
+              id: Math.random().toString(36).substr(2, 9),
+              createdAt: new Date(),
+              updatedAt: new Date(),
+              status: 'new' as const,
+              wrongCount: 0,
+              isMastered: false,
+              chapterId: 'temp-chapter'
+            })),
+            confidence: wordResult.success ? 0.8 : 0,
+            errors: wordResult.errors,
+            metadata: {
+              parser: 'WordParser',
+              strategy: 'word-document',
+              processingTime: Date.now() - startTime,
+              fileName: wordResult.metadata.fileName,
+              fileSize: wordResult.metadata.fileSize,
+              wordCount: wordResult.metadata.wordCount,
+              extractionMethod: wordResult.metadata.extractionMethod
+            }
+          };
+        }
+      }
+
       // 获取路由决策
       const decision = await this.route(input, context);
       
@@ -131,14 +201,21 @@ export class ParserRouter {
       if (decision.selectedStrategy.parser === 'ai') {
         // 使用AI解析
         const aiContext = {
-          inputType: input.type,
+          inputType: input.type === 'image' ? 'ocr' as const : input.type,
           textLength: typeof input.content === 'string' ? input.content.length : undefined,
           detectedFormat: context?.detectedFormat,
           formatConfidence: context?.formatConfidence
         };
 
+        // 尝试从 context 或 input.options 获取 chapterId，若无则使用默认值
+        const chapterId =
+          (context && (context as any).chapterId) ||
+          (input.options && (input.options as any).chapterId) ||
+          'default-chapter-id';
+
         const aiResult = await AIParser.parseWithAI(
           typeof input.content === 'string' ? input.content : '',
+          chapterId,
           aiContext
         );
 
@@ -161,11 +238,28 @@ export class ParserRouter {
 
         // 添加路由元数据
         result.metadata = {
-          ...result.metadata,
+          parser: decision.selectedStrategy.name,
+          processingTime: Date.now() - startTime,
           strategy: decision.selectedStrategy.name,
           estimatedCost: decision.estimatedCost,
           reasoning: decision.reasoning
         };
+      }
+
+      // 保存到缓存（仅对成功的解析结果）
+      if (result.success && inputText && result.questions.length > 0) {
+        this.cache.set(
+          inputText,
+          decision.selectedStrategy.name,
+          decision.selectedStrategy.name,
+          result,
+          decision.estimatedCost
+        );
+      }
+
+      // 记录成本
+      if (decision.estimatedCost > 0) {
+        this.costOptimizer.recordCost(decision.estimatedCost);
       }
 
       // 记录性能指标
@@ -185,6 +279,11 @@ export class ParserRouter {
           alternatives: decision.alternatives.map(a => a.name)
         }
       });
+
+      // 触发自适应学习
+      setTimeout(() => {
+        this.adaptiveStrategy.adapt(context);
+      }, 1000); // 延迟执行，避免影响响应时间
 
       return result;
       
@@ -294,6 +393,28 @@ export class ParserRouter {
       if (context.qualityRequirement === 'high' && strategy.accuracy < 8) {
         score -= 3;
       }
+
+      // 成本分析调整
+      if (strategy.parser === 'ai' && context.textLength) {
+        const costAnalysis = this.costOptimizer.analyzeCost(
+          'x'.repeat(context.textLength),
+          strategy.name
+        );
+
+        // 如果超出预算，大幅降低得分
+        if (!this.costOptimizer.canUseAI(costAnalysis.estimatedCost)) {
+          score -= 5;
+        }
+
+        // 根据成本效益调整得分
+        if (costAnalysis.estimatedCost > 50) { // 超过0.5元
+          score -= 2;
+        }
+      }
+
+      // 自适应调整
+      const adaptiveScore = this.adaptiveStrategy.getAdjustmentScore(strategy.name);
+      score += adaptiveScore;
 
       return { ...strategy, score };
     });

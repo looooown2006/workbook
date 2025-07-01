@@ -1,53 +1,122 @@
-/* 题目网格容器 */
+/* 现代化题目网格样式 */
+@import '../../styles/design-system.css';
+
 .question-grid-container {
   height: 100%;
   overflow-y: auto;
+  background: var(--bg-secondary);
+  padding: var(--space-lg);
 }
 
-/* 统计卡片 */
+/* 现代化统计卡片 */
 .stats-card {
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-light);
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.stats-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--success-gradient);
+}
+
+.stats-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
 }
 
 .stats-card .ant-statistic-title {
-  font-size: 12px;
-  color: #666;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  font-weight: var(--font-weight-medium);
 }
 
 .stats-card .ant-statistic-content {
-  font-size: 18px;
-  font-weight: bold;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-/* 操作栏 */
+/* 现代化操作栏 */
 .action-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: var(--space-lg);
+  background: var(--bg-card);
+  padding: var(--space-lg);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--space-lg);
+  border: 1px solid var(--border-light);
 }
 
 .action-left {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--space-md);
 }
 
 .action-right {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--space-md);
 }
 
-/* 题目网格 */
+.action-bar .ant-btn {
+  border-radius: var(--radius-md);
+  font-weight: var(--font-weight-medium);
+  transition: all var(--transition-normal);
+  box-shadow: var(--shadow-sm);
+}
+
+.action-bar .ant-btn-primary {
+  background: var(--primary-gradient);
+  border: none;
+}
+
+.action-bar .ant-btn-primary:hover {
+  background: var(--primary-gradient-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-colored);
+}
+
+.action-bar .ant-select {
+  min-width: 120px;
+}
+
+.action-bar .ant-select-selector {
+  border-radius: var(--radius-md);
+  border-color: var(--border-medium);
+  transition: all var(--transition-normal);
+}
+
+.action-bar .ant-select-focused .ant-select-selector {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px var(--primary-color-light);
+}
+
+/* 现代化题目网格 */
 .question-grid {
   display: grid;
-  gap: 8px;
-  padding: 16px 0;
+  gap: var(--space-md);
+  padding: var(--space-lg) 0;
+  grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
 }
 
 /* 题目项容器 */
@@ -56,22 +125,44 @@
   display: inline-block;
 }
 
-/* 题目项按钮 */
+/* 现代化题目项按钮 */
 .question-item {
-  font-weight: bold;
-  font-size: 14px;
-  border-radius: 6px;
-  transition: all 0.2s ease;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-sm);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-normal);
+  box-shadow: var(--shadow-sm);
+  border: 2px solid transparent;
+  position: relative;
+  overflow: hidden;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.question-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left var(--transition-slow);
+}
+
+.question-item:hover::before {
+  left: 100%;
 }
 
 .question-item:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: var(--shadow-md);
 }
 
 .question-item:active {
-  transform: translateY(0);
+  transform: translateY(0) scale(0.98);
 }
 
 /* 斩题标记按钮 */
@@ -86,14 +177,176 @@
   transform: scale(1.1);
 }
 
-/* 空状态 */
+/* 现代化空状态样式 */
 .empty-content {
   display: flex;
   justify-content: center;
   align-items: center;
   height: 200px;
-  color: #999;
-  font-size: 16px;
+  color: var(--text-secondary);
+  font-size: var(--font-size-lg);
+}
+
+.empty-state-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+  padding: var(--space-2xl);
+  background: var(--bg-secondary);
+}
+
+.empty-state-content {
+  text-align: center;
+  max-width: 800px;
+  width: 100%;
+}
+
+.empty-icon {
+  position: relative;
+  margin-bottom: var(--space-2xl);
+  display: inline-block;
+}
+
+.floating-icon {
+  font-size: 5rem;
+  animation: float 3s ease-in-out infinite;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.1));
+}
+
+.icon-shadow {
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 8px;
+  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.1) 0%, transparent 70%);
+  animation: float 3s ease-in-out infinite reverse;
+}
+
+.empty-text-content {
+  margin-bottom: var(--space-2xl);
+}
+
+.empty-title {
+  display: block;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-md);
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.empty-subtitle {
+  display: block;
+  font-size: var(--font-size-lg);
+  color: var(--text-secondary);
+  line-height: var(--line-height-relaxed);
+}
+
+.import-options-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--space-xl);
+  margin-top: var(--space-2xl);
+}
+
+.import-option-card {
+  border-radius: var(--radius-xl);
+  border: 2px solid var(--border-light);
+  transition: all var(--transition-normal);
+  overflow: hidden;
+  position: relative;
+}
+
+.import-option-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  transition: all var(--transition-normal);
+}
+
+.import-option-card.smart-import::before {
+  background: var(--primary-gradient);
+}
+
+.import-option-card.file-import::before {
+  background: var(--secondary-gradient);
+}
+
+.import-option-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-xl);
+  border-color: transparent;
+}
+
+.import-option-card.smart-import:hover {
+  box-shadow: 0 16px 48px rgba(102, 126, 234, 0.2);
+}
+
+.import-option-card.file-import:hover {
+  box-shadow: 0 16px 48px rgba(240, 147, 251, 0.2);
+}
+
+.import-card-content {
+  padding: var(--space-xl);
+  text-align: center;
+}
+
+.import-icon {
+  font-size: 3rem;
+  margin-bottom: var(--space-lg);
+  color: var(--primary-color);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 80px;
+  height: 80px;
+  margin: 0 auto var(--space-lg);
+  border-radius: var(--radius-full);
+  background: var(--primary-color-light);
+  transition: all var(--transition-normal);
+}
+
+.import-option-card.file-import .import-icon {
+  color: var(--secondary-color);
+  background: rgba(240, 147, 251, 0.1);
+}
+
+.import-option-card:hover .import-icon {
+  transform: scale(1.1);
+  background: var(--primary-gradient);
+  color: var(--text-inverse);
+}
+
+.import-option-card.file-import:hover .import-icon {
+  background: var(--secondary-gradient);
+}
+
+.import-info {
+  margin-bottom: var(--space-xl);
+}
+
+.import-title {
+  display: block;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-sm);
+}
+
+.import-description {
+  display: block;
+  font-size: var(--font-size-md);
+  color: var(--text-secondary);
+  line-height: var(--line-height-relaxed);
 }
 
 /* 响应式设计 */
@@ -184,51 +437,74 @@
   }
 }
 
-/* 题目状态颜色 */
+/* 现代化题目状态颜色系统 */
 .question-new {
-  background-color: #d9d9d9;
-  border-color: #d9d9d9;
-  color: #000;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-color: var(--border-medium);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.question-new:hover {
+  background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+  border-color: var(--primary-color);
 }
 
 .question-correct {
-  background-color: #52c41a;
-  border-color: #52c41a;
-  color: white;
+  background: var(--success-gradient);
+  border-color: transparent;
+  color: var(--text-inverse);
+  box-shadow: 0 4px 12px rgba(79, 172, 254, 0.3);
+}
+
+.question-correct:hover {
+  background: linear-gradient(135deg, #3d9bfd 0%, #00e1fd 100%);
+  transform: translateY(-3px) scale(1.05);
 }
 
 .question-wrong-1 {
-  background-color: #ff7875;
-  border-color: #ff7875;
-  color: white;
+  background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+  border-color: transparent;
+  color: var(--text-inverse);
+  box-shadow: 0 4px 12px rgba(255, 154, 158, 0.3);
 }
 
 .question-wrong-2 {
-  background-color: #ff4d4f;
-  border-color: #ff4d4f;
-  color: white;
+  background: var(--warning-gradient);
+  border-color: transparent;
+  color: var(--text-inverse);
+  box-shadow: 0 4px 12px rgba(250, 112, 154, 0.3);
 }
 
 .question-wrong-3 {
-  background-color: #cf1322;
-  border-color: #cf1322;
-  color: white;
+  background: var(--error-gradient);
+  border-color: transparent;
+  color: var(--text-inverse);
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+  animation: pulse 2s infinite;
 }
 
 .question-mastered {
-  background-color: #52c41a;
-  border-color: #52c41a;
-  color: white;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: transparent;
+  color: var(--text-inverse);
   position: relative;
+  box-shadow: var(--shadow-colored);
 }
 
 .question-mastered::after {
-  content: '★';
+  content: '⭐';
   position: absolute;
-  top: -2px;
-  right: 2px;
-  color: #faad14;
-  font-size: 10px;
+  top: -4px;
+  right: -2px;
+  font-size: 14px;
+  animation: float 2s ease-in-out infinite;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.question-mastered:hover {
+  background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+  transform: translateY(-3px) scale(1.05);
 }
 
 /* 动画效果 */
