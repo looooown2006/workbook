@@ -42,7 +42,8 @@ const QuestionBankManager: React.FC = () => {
     addQuestionBank,
     updateQuestionBank,
     deleteQuestionBank,
-    isLoading
+    isLoading,
+    setCurrentBank
   } = useAppStore();
 
   const [selectedBank, setSelectedBank] = useState<QuestionBank | null>(null);
@@ -142,6 +143,7 @@ const QuestionBankManager: React.FC = () => {
   };
 
   const handleView = (bank: QuestionBank) => {
+    setCurrentBank(bank);
     setSelectedBank(bank);
   };
 

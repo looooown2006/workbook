@@ -30,10 +30,14 @@ import EmptyState from '../Common/EmptyState';
 
 const { Title, Text, Paragraph } = Typography;
 
-const StudyMode: React.FC = () => {
+interface StudyModeProps {
+  questions?: Question[];
+}
+
+const StudyMode: React.FC<StudyModeProps> = ({ questions: propQuestions }) => {
   const navigate = useNavigate();
   const {
-    questions,
+    questions: storeQuestions,
     currentQuestion,
     currentChapter,
     currentBank,
@@ -41,6 +45,9 @@ const StudyMode: React.FC = () => {
     markQuestionAsMastered,
     unmarkQuestionAsMastered
   } = useAppStore();
+
+  // 优先使用props传入的questions，否则用store中的questions
+  const questions = propQuestions ?? storeQuestions;
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showAnswer, setShowAnswer] = useState(true); // 背题模式默认显示答案

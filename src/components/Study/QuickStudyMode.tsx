@@ -30,10 +30,14 @@ import EmptyState from '../Common/EmptyState';
 
 const { Title, Text, Paragraph } = Typography;
 
-const QuickStudyMode: React.FC = () => {
+interface QuickStudyModeProps {
+  questions?: Question[];
+}
+
+const QuickStudyMode: React.FC<QuickStudyModeProps> = ({ questions: propQuestions }) => {
   const navigate = useNavigate();
   const {
-    questions,
+    questions: storeQuestions,
     currentQuestion,
     currentChapter,
     currentBank,
@@ -46,9 +50,13 @@ const QuickStudyMode: React.FC = () => {
     addWrongQuestion
   } = useAppStore();
 
+  // 优先使用props传入的questions，否则用store中的questions
+  const questions = propQuestions ?? storeQuestions;
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showAnswer, setShowAnswer] = useState(false);
+  const [answerTimer, setAnswerTimer] = useState<NodeJS.Timeout | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [startTime, setStartTime] = useState<Date>(new Date());
   const [filteredQuestions, setFilteredQuestions] = useState<Question[]>([]);
@@ -70,10 +78,15 @@ const QuickStudyMode: React.FC = () => {
   useEffect(() => {
     if (question) {
       setCurrentQuestion(question);
-      resetQuestionState();
     }
   }, [question, setCurrentQuestion]);
-
+  useEffect(() => {
+  // 只在切换题目时重置
+    setSelectedAnswer(null);
+    setShowAnswer(false);
+    setIsCorrect(null);
+    setStartTime(new Date());
+}, [currentIndex]);
   const resetQuestionState = () => {
     setSelectedAnswer(null);
     setShowAnswer(false);
@@ -95,6 +108,12 @@ const QuickStudyMode: React.FC = () => {
 
     setSelectedAnswer(answerIndex);
     setShowAnswer(true);
+
+
+    // 清理上一个定时器（防止多次触发）
+  if (answerTimer) {
+    clearTimeout(answerTimer);
+  }
 
     const correct = answerIndex === question.correctAnswer;
     setIsCorrect(correct);
@@ -128,14 +147,17 @@ const QuickStudyMode: React.FC = () => {
       }
 
       // 快刷模式：显示答案后1秒自动跳转下一题
-      setTimeout(() => {
+      const timer = setTimeout(() => {
+        setShowAnswer(false);
         handleNext();
       }, 1000);
+
+      setAnswerTimer(timer);
 
     } catch (error) {
       message.error('提交答案失败');
     }
-  }, [showAnswer, question, startTime, submitAnswer, currentBank, currentChapter, addWrongQuestion, handleNext]);
+  }, [showAnswer, question, startTime, answerTimer, submitAnswer, currentBank, currentChapter, addWrongQuestion, handleNext]);
 
   const handlePrevious = () => {
     if (currentIndex > 0) {

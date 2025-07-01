@@ -10,7 +10,6 @@ import {
   Row,
   Col,
   Tag,
-  Modal,
   Statistic,
   Table,
   Divider
@@ -25,14 +24,13 @@ import {
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '../../stores/useAppStore';
-import { Question, TestSession } from '../../types';
+import { Question } from '../../types';
 import { formatDuration } from '../../utils/helpers';
 import EmptyState from '../Common/EmptyState';
 
 const { Title, Text, Paragraph } = Typography;
 
 const TestMode: React.FC = () => {
-  const navigate = useNavigate();
   const {
     questions,
     currentChapter,
@@ -41,8 +39,10 @@ const TestMode: React.FC = () => {
     updateTestSession,
     completeTestSession,
     currentTestSession,
-    addWrongQuestion
+    addWrongQuestion,
+    setPendingRoute
   } = useAppStore();
+  const navigate = useNavigate();
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Map<string, number>>(new Map());
@@ -55,7 +55,8 @@ const TestMode: React.FC = () => {
   useEffect(() => {
     const filtered = questions.filter(q => !q.isMastered);
     setFilteredQuestions(filtered);
-    
+    setCurrentIndex(0); // 题库/章节/题目变化时重置到第一题
+
     // 初始化测试会话
     if (filtered.length > 0 && currentBank && currentChapter) {
       const questionIds = filtered.map(q => q.id);
@@ -73,48 +74,11 @@ const TestMode: React.FC = () => {
     return () => clearInterval(timer);
   }, [startTime]);
 
-  // 键盘事件处理
-  useEffect(() => {
-    const handleKeyPress = (event: KeyboardEvent) => {
-      if (showResults) return;
-
-      switch (event.key) {
-        case ' ':
-          event.preventDefault();
-          handleNext();
-          break;
-        case 'ArrowLeft':
-          event.preventDefault();
-          handlePrevious();
-          break;
-        case 'ArrowRight':
-          event.preventDefault();
-          handleNext();
-          break;
-        case '1':
-        case '2':
-        case '3':
-        case '4':
-        case '5':
-        case '6':
-          event.preventDefault();
-          const optionIndex = parseInt(event.key) - 1;
-          if (optionIndex < currentQuestion?.options.length) {
-            handleAnswerSelect(optionIndex);
-          }
-          break;
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [showResults, currentIndex, filteredQuestions]);
-
   const currentQuestion = filteredQuestions[currentIndex];
 
+  // 选择答案后只高亮，不自动跳题、不显示答案
   const handleAnswerSelect = useCallback((answerIndex: number) => {
     if (!currentQuestion || showResults) return;
-
     const newAnswers = new Map(answers);
     newAnswers.set(currentQuestion.id, answerIndex);
     setAnswers(newAnswers);
@@ -165,7 +129,9 @@ const TestMode: React.FC = () => {
     }
   };
 
+  // 返回首页选择题库按钮
   const handleBackToHome = () => {
+    setPendingRoute('/test');
     navigate('/');
   };
 
@@ -181,7 +147,7 @@ const TestMode: React.FC = () => {
     filteredQuestions.forEach(question => {
       const userAnswer = answers.get(question.id);
       const isCorrect = userAnswer === question.correctAnswer;
-      
+
       if (userAnswer !== undefined) {
         if (isCorrect) {
           correctCount++;
@@ -210,11 +176,6 @@ const TestMode: React.FC = () => {
     };
   };
 
-  // 如果没有选择题库或章节，显示空状态
-  if (!currentBank || !currentChapter) {
-    return <EmptyState mode="test" />;
-  }
-
   // 如果没有题目，显示空状态
   if (filteredQuestions.length === 0) {
     return (
@@ -226,6 +187,22 @@ const TestMode: React.FC = () => {
     );
   }
 
+  if (!currentBank) {
+    return (
+      <div style={{ padding: '24px', textAlign: 'center' }}>
+        <Button type="primary" onClick={handleBackToHome}>
+          返回首页选择题库
+        </Button>
+      </div>
+    );
+  }
+  if (!currentChapter) {
+    return (
+      <div style={{ padding: '24px', textAlign: 'center' }}>
+        <Text type="secondary">请先选择章节</Text>
+      </div>
+    );
+  }
   if (!currentQuestion) {
     return (
       <div style={{ padding: '24px', textAlign: 'center' }}>
@@ -335,9 +312,9 @@ const TestMode: React.FC = () => {
                 title="正确率"
                 value={testResults.accuracy}
                 suffix="%"
-                valueStyle={{ 
-                  color: testResults.accuracy >= 80 ? '#3f8600' : 
-                         testResults.accuracy >= 60 ? '#faad14' : '#cf1322' 
+                valueStyle={{
+                  color: testResults.accuracy >= 80 ? '#3f8600' :
+                    testResults.accuracy >= 60 ? '#faad14' : '#cf1322'
                 }}
               />
             </Col>
@@ -353,7 +330,7 @@ const TestMode: React.FC = () => {
             <Col span={12}>
               <Statistic
                 title="平均用时"
-                value={testResults.totalAnswered > 0 ? 
+                value={testResults.totalAnswered > 0 ?
                   formatDuration(Math.round(elapsedTime / testResults.totalAnswered)) : '0秒'}
               />
             </Col>
@@ -392,8 +369,8 @@ const TestMode: React.FC = () => {
         <Row justify="space-between" align="middle">
           <Col>
             <Space>
-              <Button 
-                icon={<HomeOutlined />} 
+              <Button
+                icon={<HomeOutlined />}
                 onClick={handleBackToHome}
               >
                 返回首页
@@ -410,8 +387,8 @@ const TestMode: React.FC = () => {
             </Space>
           </Col>
         </Row>
-        <Progress 
-          percent={progress} 
+        <Progress
+          percent={progress}
           style={{ marginTop: '8px' }}
           strokeColor={{
             '0%': '#faad14',
@@ -432,35 +409,36 @@ const TestMode: React.FC = () => {
         </div>
 
         {/* 选项 */}
-        <Radio.Group 
-          value={answers.get(currentQuestion.id)} 
+        <Radio.Group
+          value={answers.get(currentQuestion.id)}
           onChange={(e) => handleAnswerSelect(e.target.value)}
           style={{ width: '100%' }}
         >
           <Space direction="vertical" style={{ width: '100%' }}>
-            {currentQuestion.options.map((option, index) => (
-              <Radio.Button
-                key={index}
-                value={index}
-                style={{
-                  width: '100%',
-                  textAlign: 'left',
-                  padding: '12px 16px',
-                  height: 'auto',
-                  marginBottom: '8px',
-                  border: '1px solid #d9d9d9',
-                  borderRadius: '6px'
-                }}
-              >
-                <Space>
-                  <Text strong>{String.fromCharCode(65 + index)}.</Text>
-                  <Text>{option}</Text>
-                  <Text type="secondary" style={{ fontSize: '12px' }}>
-                    (按 {index + 1} 键选择)
-                  </Text>
-                </Space>
-              </Radio.Button>
-            ))}
+            {currentQuestion.options.map((option, index) => {
+              const isSelected = answers.get(currentQuestion.id) === index;
+              return (
+                <Radio.Button
+                  key={index}
+                  value={index}
+                  style={{
+                    width: '100%',
+                    textAlign: 'left',
+                    padding: '12px 16px',
+                    height: 'auto',
+                    marginBottom: '8px',
+                    border: isSelected ? '2px solid #1890ff' : '1px solid #d9d9d9',
+                    borderRadius: '6px',
+                    backgroundColor: isSelected ? '#e6f7ff' : 'white'
+                  }}
+                >
+                  <Space>
+                    <Text strong>{String.fromCharCode(65 + index)}.</Text>
+                    <Text>{option}</Text>
+                  </Space>
+                </Radio.Button>
+              );
+            })}
           </Space>
         </Radio.Group>
 
@@ -474,21 +452,16 @@ const TestMode: React.FC = () => {
             >
               上一题
             </Button>
-            
+
             <Button
               type="primary"
               icon={currentIndex === filteredQuestions.length - 1 ? undefined : <ArrowRightOutlined />}
               onClick={handleNext}
+              disabled={answers.get(currentQuestion.id) === undefined}
             >
               {currentIndex === filteredQuestions.length - 1 ? '完成测试' : '下一题'}
             </Button>
           </Space>
-          
-          <div style={{ marginTop: '16px' }}>
-            <Text type="secondary">
-              快捷键：数字键选择答案，空格键/右箭头下一题，左箭头上一题
-            </Text>
-          </div>
         </div>
       </Card>
     </div>

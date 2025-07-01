@@ -1,0 +1,500 @@
+/* 现代化侧边栏样式 */
+@import '../../styles/design-system.css';
+
+/* 现代化固定题库侧边栏 */
+.question-bank-sidebar-fixed {
+  position: fixed;
+  top: 64px; /* 导航栏高度 */
+  left: 0;
+  width: 320px; /* 增加宽度 */
+  height: calc(100vh - 64px);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-backdrop);
+  -webkit-backdrop-filter: var(--glass-backdrop);
+  border-right: 1px solid var(--glass-border);
+  z-index: var(--z-sticky);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: var(--shadow-glass);
+}
+
+.question-bank-sidebar-fixed::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--primary-gradient);
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+}
+
+.question-bank-sidebar-fixed::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(102, 126, 234, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 0% 50%, rgba(240, 147, 251, 0.03) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* 兼容原有样式 */
+.question-bank-sidebar {
+  background: var(--bg-card);
+  height: 100%;
+  padding: var(--space-lg);
+  border-right: 1px solid var(--border-light);
+  position: relative;
+  overflow: hidden;
+}
+
+.question-bank-sidebar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--primary-gradient);
+}
+
+.sidebar-header {
+  padding: var(--space-lg);
+  border-bottom: 2px solid var(--border-light);
+  flex-shrink: 0;
+}
+
+/* 批量管理工具栏 */
+.batch-toolbar {
+  background: var(--bg-tertiary);
+  padding: var(--space-md) var(--space-lg);
+  border-bottom: 1px solid var(--border-light);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.batch-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.selected-count {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.batch-buttons {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+/* 题库列表容器 */
+.bank-list-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-md) var(--space-lg);
+}
+
+/* 侧边栏底部 */
+.sidebar-footer {
+  padding: var(--space-lg);
+  border-top: 1px solid var(--border-light);
+  background: var(--bg-tertiary);
+  flex-shrink: 0;
+}
+
+.manage-btn {
+  border-radius: var(--radius-lg);
+  font-weight: var(--font-weight-medium);
+  transition: all var(--transition-normal);
+}
+
+.manage-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.sidebar-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  margin: 0 0 var(--space-md) 0;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.sidebar-actions {
+  display: flex;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.sidebar-btn {
+  border-radius: var(--radius-md);
+  font-weight: var(--font-weight-medium);
+  transition: all var(--transition-normal);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-medium);
+}
+
+.sidebar-btn-primary {
+  background: var(--primary-gradient);
+  border: none;
+  color: var(--text-inverse);
+}
+
+.sidebar-btn-primary:hover {
+  background: var(--primary-gradient-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-colored);
+}
+
+.sidebar-btn:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  transform: translateY(-1px);
+}
+
+/* 现代化列表样式 */
+.modern-list {
+  background: transparent;
+}
+
+.modern-list .ant-list-item {
+  padding: 0;
+  margin-bottom: var(--space-md);
+  border: none;
+}
+
+/* 现代化题库卡片 - 玻璃拟态设计 */
+.bank-card {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--glass-border);
+  transition: all var(--transition-normal);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  margin: var(--space-sm);
+}
+
+.bank-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--primary-gradient);
+  transform: scaleX(0);
+  transition: transform var(--transition-normal);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+}
+
+.bank-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    radial-gradient(circle at 80% 20%, rgba(102, 126, 234, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 20% 80%, rgba(240, 147, 251, 0.03) 0%, transparent 50%);
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+  pointer-events: none;
+  border-radius: var(--radius-xl);
+}
+
+.bank-card:hover::before {
+  transform: scaleX(1);
+}
+
+.bank-card:hover::after {
+  opacity: 1;
+}
+
+.bank-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary-color);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.bank-card.selected-bank {
+  border-color: var(--primary-color);
+  background: rgba(102, 126, 234, 0.1);
+  box-shadow: var(--shadow-glow);
+  transform: translateY(-2px);
+}
+
+.bank-card.selected-bank::before {
+  transform: scaleX(1);
+  background: var(--primary-gradient);
+}
+
+.bank-card.selected-bank::after {
+  opacity: 1;
+}
+
+/* 管理模式样式 */
+.bank-card.manage-mode {
+  cursor: default;
+  padding-left: 0;
+}
+
+.bank-card.manage-mode:hover {
+  transform: none;
+  box-shadow: var(--shadow-md);
+}
+
+.bank-checkbox {
+  position: absolute;
+  left: var(--space-md);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+}
+
+.bank-card.manage-mode .bank-card-content {
+  margin-left: var(--space-2xl);
+}
+
+.bank-card-content {
+  padding: var(--space-lg);
+}
+
+.bank-meta {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-md);
+}
+
+.bank-icon {
+  font-size: var(--font-size-2xl);
+  color: var(--primary-color);
+  background: var(--primary-color-light);
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-normal);
+}
+
+.bank-card:hover .bank-icon {
+  background: var(--primary-gradient);
+  color: var(--text-inverse);
+  transform: scale(1.1);
+}
+
+.bank-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.bank-name {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-xs);
+  line-height: var(--line-height-tight);
+}
+
+.bank-description {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-sm);
+  line-height: var(--line-height-normal);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.bank-stats {
+  display: flex;
+  gap: var(--space-md);
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+}
+
+.bank-stat {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.bank-actions {
+  display: flex;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-lg);
+  background: var(--bg-tertiary);
+  border-top: 1px solid var(--border-light);
+}
+
+.bank-action-btn {
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  transition: all var(--transition-normal);
+  border-radius: var(--radius-sm);
+  padding: var(--space-xs);
+}
+
+.bank-action-btn:hover {
+  color: var(--primary-color);
+  background: var(--primary-color-light);
+  transform: scale(1.1);
+}
+
+.bank-action-btn.danger:hover {
+  color: var(--error-color);
+  background: var(--error-color-light);
+}
+
+/* 章节侧边栏样式 */
+.chapter-sidebar {
+  background: var(--bg-card);
+  height: 100%;
+  padding: var(--space-lg);
+  border-right: 1px solid var(--border-light);
+  position: relative;
+  overflow: hidden;
+}
+
+.chapter-sidebar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--success-gradient);
+}
+
+.chapter-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--border-light);
+  transition: all var(--transition-normal);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: var(--space-md);
+}
+
+.chapter-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--warning-gradient);
+  transform: scaleX(0);
+  transition: transform var(--transition-normal);
+}
+
+.chapter-card:hover::before {
+  transform: scaleX(1);
+}
+
+.chapter-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--success-color);
+}
+
+.chapter-card.selected-chapter {
+  border-color: var(--success-color);
+  background: var(--success-color-light);
+  box-shadow: 0 8px 32px rgba(79, 172, 254, 0.2);
+}
+
+.chapter-card.selected-chapter::before {
+  transform: scaleX(1);
+  background: var(--success-gradient);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .question-bank-sidebar,
+  .chapter-sidebar {
+    padding: var(--space-md);
+  }
+  
+  .sidebar-title {
+    font-size: var(--font-size-lg);
+  }
+  
+  .bank-card-content {
+    padding: var(--space-md);
+  }
+  
+  .bank-icon {
+    width: 40px;
+    height: 40px;
+    font-size: var(--font-size-xl);
+  }
+  
+  .bank-name {
+    font-size: var(--font-size-md);
+  }
+  
+  .sidebar-actions {
+    flex-direction: column;
+  }
+  
+  .sidebar-btn {
+    width: 100%;
+  }
+}
+
+/* 加载状态 */
+.sidebar-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  color: var(--text-secondary);
+}
+
+/* 空状态 */
+.sidebar-empty {
+  text-align: center;
+  padding: var(--space-2xl);
+  color: var(--text-secondary);
+}
+
+.sidebar-empty-icon {
+  font-size: 3rem;
+  margin-bottom: var(--space-lg);
+  opacity: 0.5;
+}
+
+.sidebar-empty-text {
+  font-size: var(--font-size-lg);
+  margin-bottom: var(--space-md);
+}
+
+.sidebar-empty-hint {
+  font-size: var(--font-size-sm);
+  color: var(--text-tertiary);
+}

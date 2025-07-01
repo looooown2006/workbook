@@ -47,7 +47,7 @@ interface AppStore extends AppState {
   setCurrentChapter: (chapter: Chapter | undefined) => void;
 
   // Actions - 题目管理
-  loadQuestions: (chapterId: string) => Promise<void>;
+  loadQuestions: (chapterId: string) => Promise<Question[]>;
   addQuestion: (question: Omit<Question, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
   addQuestions: (questions: Omit<Question, 'id' | 'createdAt' | 'updatedAt'>[]) => Promise<void>;
   updateQuestion: (question: Question) => Promise<void>;
@@ -97,6 +97,16 @@ interface AppStore extends AppState {
 
   // Actions - 初始化
   initializeApp: () => Promise<void>;
+
+  // Actions - 答题记录
+  loadAnswerRecords: () => Promise<void>;
+
+  // 辅助函数：统计并更新所有题库的题数
+  updateAllBanksQuestionCount: () => Promise<void>;
+
+  // 新增字段
+  pendingRoute?: string;
+  setPendingRoute: (route: string | undefined) => void;
 }
 
 export const useAppStore = create<AppStore>((set, get) => ({
@@ -121,6 +131,46 @@ export const useAppStore = create<AppStore>((set, get) => ({
   // 学习计划初始状态
   studyPlans: [],
 
+  // 新增字段
+  pendingRoute: undefined,
+  setPendingRoute: (route) => set({ pendingRoute: route }),
+
+  // 辅助函数：统计并更新所有题库的题数
+  updateAllBanksQuestionCount: async () => {
+    try {
+      const { questionBanks } = get();
+      const updatedBanks: QuestionBank[] = [];
+      for (const bank of questionBanks) {
+        try {
+          // 加载该题库的所有章节
+          const chapters = await dbManager.getByIndex<Chapter>('chapters', 'bankId', bank.id);
+          let totalQuestions = 0;
+          for (const chapter of chapters) {
+            // 加载每个章节的题目
+            const questions = await dbManager.getByIndex<Question>('questions', 'chapterId', chapter.id);
+            totalQuestions += questions.length;
+          }
+          // 只在题数有变化时才更新
+          if (bank.totalQuestions !== totalQuestions) {
+            const updatedBank = { ...bank, totalQuestions, updatedAt: new Date() };
+            await dbManager.update('questionBanks', updatedBank);
+            updatedBanks.push(updatedBank);
+          } else {
+            updatedBanks.push(bank);
+          }
+        } catch (err) {
+          // 单个题库出错不影响整体
+          updatedBanks.push(bank);
+          console.error(`统计题库[${bank.name}]题数失败:`, err);
+        }
+      }
+      set({ questionBanks: updatedBanks });
+    } catch (err) {
+      set({ error: '题库刷新失败' });
+      console.error('题库刷新失败:', err);
+    }
+  },
+
   // 题库管理
   loadQuestionBanks: async () => {
     try {
@@ -129,6 +179,13 @@ export const useAppStore = create<AppStore>((set, get) => ({
       console.log('题库数据:', banks);
       set({ questionBanks: banks });
       console.log('题库设置完成');
+      // 加载后自动统计并更新题数
+      try {
+        await get().updateAllBanksQuestionCount();
+      } catch (err) {
+        // 只报错不影响主流程
+        console.error('题库题数统计失败:', err);
+      }
     } catch (error) {
       console.error('加载题库失败:', error);
       set({ error: '加载题库失败' });
@@ -264,14 +321,13 @@ export const useAppStore = create<AppStore>((set, get) => ({
   },
 
   setCurrentChapter: (chapter) => {
-    set({ currentChapter: chapter, currentQuestion: undefined });
+    set({ currentChapter: chapter, currentQuestion: undefined, questions: [], isLoading: false });
   },
 
   // 题目管理
   loadQuestions: async (chapterId) => {
     try {
-      // 不设置全局 isLoading，避免影响整个应用
-      set({ error: undefined });
+      set({ error: undefined, isLoading: true });
       const chapter = await dbManager.get<Chapter>(DB_KEYS.CHAPTERS, chapterId);
       if (chapter) {
         const questions: Question[] = [];
@@ -281,13 +337,14 @@ export const useAppStore = create<AppStore>((set, get) => ({
             questions.push(question);
           }
         }
-        set({ questions });
+        set({ questions, isLoading: false });
+        return questions;
       } else {
-        // 章节不存在时，设置空题目列表
-        set({ questions: [] });
+        set({ questions: [], isLoading: false });
+        return [];
       }
     } catch (error) {
-      set({ error: '加载题目失败' });
+      set({ error: '加载题目失败', isLoading: false });
       throw error;
     }
   },
@@ -454,9 +511,11 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
   // 答题相关
   submitAnswer: async (questionId, selectedAnswer, timeSpent) => {
+    console.log('submitAnswer 被调用', questionId, selectedAnswer, timeSpent);
     try {
       const { currentQuestion, studyMode, currentBank, currentChapter } = get();
-      if (!currentQuestion || !currentBank || !currentChapter) return;
+      if (!currentQuestion || !currentBank || !currentChapter) 
+        return;
 
       const isCorrect = selectedAnswer === currentQuestion.correctAnswer;
       
@@ -474,6 +533,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
       };
       
       await dbManager.add(DB_KEYS.ANSWER_RECORDS, record);
+      console.log('已写入答题记录', record);
       
       // 更新题目状态
       const updatedQuestion: Question = {
@@ -826,5 +886,15 @@ export const useAppStore = create<AppStore>((set, get) => ({
   // 用户统计相关方法（临时实现）
   userStats: undefined,
   getQuestions: () => get().questions,
-  getUserStats: () => ({ totalQuestions: 0, correctRate: 0 })
+  getUserStats: () => ({ totalQuestions: 0, correctRate: 0 }),
+
+  // Actions - 答题记录
+  loadAnswerRecords: async () => {
+    try {
+      const records = await dbManager.getAll(DB_KEYS.ANSWER_RECORDS) as AnswerRecord[];
+      set({ answerRecords: records });
+    } catch (error) {
+      set({ error: '加载答题记录失败' });
+    }
+  }
 }));

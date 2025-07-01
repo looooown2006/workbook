@@ -22,6 +22,7 @@ import {
 import { useAppStore } from '../../stores/useAppStore';
 import { QuestionBank } from '../../types';
 import BankLevelImportAssistant from '../Import/BankLevelImportAssistant';
+import { useNavigate } from 'react-router-dom';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -36,8 +37,11 @@ const QuestionBankSidebar: React.FC = () => {
     deleteQuestionBank,
     setCurrentBank,
     loadChapters,
-    isLoading
+    isLoading,
+    pendingRoute,
+    setPendingRoute
   } = useAppStore();
+  const navigate = useNavigate();
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingBank, setEditingBank] = useState<QuestionBank | null>(null);
